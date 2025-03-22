@@ -1,0 +1,21 @@
+#version 460
+
+#extension GL_GOOGLE_include_directive: require
+#include "ants.glsl"
+
+layout(constant_id = 0) const uint ANT_COUNT = 1;
+
+layout(binding = 0) readonly buffer AntBufferIn {
+	Ant ants_in[];
+};
+
+layout(binding = 1) writeonly buffer AntBufferOut {
+	Ant ants_out[];
+};
+
+layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+void main()
+{
+	if (gl_GlobalInvocationID.x >= ANT_COUNT) return;
+}
