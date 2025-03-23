@@ -1,4 +1,5 @@
 #include "work_context.hpp"
+#include <vulkan/vulkan_enums.hpp>
 
 namespace ve
 {
@@ -61,6 +62,11 @@ void WorkContext::render(uint32_t image_idx, AppState& app_state)
 	compute_cb.end();
 	std::vector<vk::Semaphore> compute_wait_semaphores;
 	std::vector<vk::PipelineStageFlags> compute_wait_stages;
+	if (app_state.total_frames > 0)
+	{
+		compute_wait_semaphores.push_back(syncs[1 - app_state.current_frame].get_semaphore(Synchronization::S_FRAME_TO_FRAME));
+		compute_wait_stages.push_back(vk::PipelineStageFlagBits::eComputeShader);
+	}
 	std::vector<vk::Semaphore> compute_signal_semaphores;
 	compute_signal_semaphores.push_back(syncs[app_state.current_frame].get_semaphore(Synchronization::S_ANTS_STEP_FINISHED));
 	vk::SubmitInfo compute_si(compute_wait_semaphores.size(), compute_wait_semaphores.data(), compute_wait_stages.data(), 1, &compute_cb, compute_signal_semaphores.size(), compute_signal_semaphores.data());
@@ -107,6 +113,7 @@ void WorkContext::render(uint32_t image_idx, AppState& app_state)
 	render_wait_stages.push_back(vk::PipelineStageFlagBits::eVertexInput);
 	std::vector<vk::Semaphore> render_signal_semaphores;
 	render_signal_semaphores.push_back(syncs[app_state.current_frame].get_semaphore(Synchronization::S_RENDER_FINISHED));
+	render_signal_semaphores.push_back(syncs[app_state.current_frame].get_semaphore(Synchronization::S_FRAME_TO_FRAME));
 	vk::SubmitInfo render_si(render_wait_semaphores.size(), render_wait_semaphores.data(), render_wait_stages.data(), 1, &vcc.graphics_cbs[app_state.current_frame], render_signal_semaphores.size(), render_signal_semaphores.data());
 	vmc.get_graphics_queue().submit(render_si, syncs[app_state.current_frame].get_fence(Synchronization::F_RENDER_FINISHED));
 
