@@ -22,8 +22,8 @@ public:
 	void construct(const RenderPass& render_pass, AppState& app_state);
 	void destruct();
 	void clear(vk::CommandBuffer& cb, AppState& app_state);
-	void compute(vk::CommandBuffer& cb, AppState& app_state, uint32_t read_only_buffer_idx);
-	void render(vk::CommandBuffer& cb, AppState& app_state, uint32_t read_only_buffer_idx, const vk::Framebuffer& framebuffer, const vk::RenderPass& render_pass);
+	void compute(vk::CommandBuffer& cb, AppState& app_state);
+	void render(vk::CommandBuffer& cb, AppState& app_state, const vk::Framebuffer& framebuffer, const vk::RenderPass& render_pass);
 
 private:
 	enum Buffers

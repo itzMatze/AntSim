@@ -18,4 +18,5 @@ layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 void main()
 {
 	if (gl_GlobalInvocationID.x >= ANT_COUNT) return;
+	ants_out[gl_GlobalInvocationID.x].pos = ants_in[gl_GlobalInvocationID.x].pos + vec2(0.001 * gl_GlobalInvocationID.x, 0.0);
 }

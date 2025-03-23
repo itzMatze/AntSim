@@ -5,5 +5,5 @@ struct Ant
 
 void clear_ant(inout Ant ant)
 {
-	ant.pos = vec2(0.0, 0.0);
+	ant.pos = vec2(-1.5, 0.0);
 }

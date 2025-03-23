@@ -29,7 +29,6 @@ private:
 	Storage storage;
 	Swapchain swapchain;
 	Ants ants;
-	uint32_t read_only_buffer_idx = 0;
 	UI ui;
 	std::vector<Synchronization> syncs;
 

@@ -20,8 +20,10 @@ void WorkContext::construct(AppState& app_state)
 	const glm::ivec2 resolution(app_state.get_render_extent().width, app_state.get_render_extent().height);
 	ants.setup_storage(app_state);
 	ants.construct(swapchain.get_render_pass(), app_state);
-	ants.clear(vcc.get_one_time_compute_buffer(), app_state);
 	ui.construct(vcc, swapchain.get_render_pass(), frames_in_flight);
+	vk::CommandBuffer& cb = vcc.get_one_time_compute_buffer();
+	ants.clear(cb, app_state);
+	vcc.submit_compute(cb, true);
 }
 
 void WorkContext::destruct()
@@ -54,6 +56,16 @@ vk::Extent2D WorkContext::recreate_swapchain(bool vsync)
 
 void WorkContext::render(uint32_t image_idx, AppState& app_state)
 {
+	vk::CommandBuffer& compute_cb = vcc.begin(vcc.compute_cbs[app_state.current_frame]);
+	ants.compute(compute_cb, app_state);
+	compute_cb.end();
+	std::vector<vk::Semaphore> compute_wait_semaphores;
+	std::vector<vk::PipelineStageFlags> compute_wait_stages;
+	std::vector<vk::Semaphore> compute_signal_semaphores;
+	compute_signal_semaphores.push_back(syncs[app_state.current_frame].get_semaphore(Synchronization::S_ANTS_STEP_FINISHED));
+	vk::SubmitInfo compute_si(compute_wait_semaphores.size(), compute_wait_semaphores.data(), compute_wait_stages.data(), 1, &compute_cb, compute_signal_semaphores.size(), compute_signal_semaphores.data());
+	vmc.get_compute_queue().submit(compute_si);
+
 	vk::CommandBuffer& cb = vcc.begin(vcc.graphics_cbs[app_state.current_frame]);
 	vk::RenderPassBeginInfo rpbi{};
 	rpbi.sType = vk::StructureType::eRenderPassBeginInfo;
@@ -82,7 +94,7 @@ void WorkContext::render(uint32_t image_idx, AppState& app_state)
 	scissor.extent = swapchain.get_extent();
 	cb.setScissor(0, scissor);
 
-	ants.render(cb, app_state, read_only_buffer_idx, swapchain.get_framebuffer(image_idx), swapchain.get_render_pass().get());
+	ants.render(cb, app_state, swapchain.get_framebuffer(image_idx), swapchain.get_render_pass().get());
 	if (app_state.show_ui) ui.draw(cb, app_state);
 	cb.endRenderPass();
 	cb.end();
@@ -90,7 +102,9 @@ void WorkContext::render(uint32_t image_idx, AppState& app_state)
 	std::vector<vk::Semaphore> render_wait_semaphores;
 	std::vector<vk::PipelineStageFlags> render_wait_stages;
 	render_wait_semaphores.push_back(syncs[app_state.current_frame].get_semaphore(Synchronization::S_IMAGE_AVAILABLE));
+	render_wait_semaphores.push_back(syncs[app_state.current_frame].get_semaphore(Synchronization::S_ANTS_STEP_FINISHED));
 	render_wait_stages.push_back(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	render_wait_stages.push_back(vk::PipelineStageFlagBits::eVertexInput);
 	std::vector<vk::Semaphore> render_signal_semaphores;
 	render_signal_semaphores.push_back(syncs[app_state.current_frame].get_semaphore(Synchronization::S_RENDER_FINISHED));
 	vk::SubmitInfo render_si(render_wait_semaphores.size(), render_wait_semaphores.data(), render_wait_stages.data(), 1, &vcc.graphics_cbs[app_state.current_frame], render_signal_semaphores.size(), render_signal_semaphores.data());

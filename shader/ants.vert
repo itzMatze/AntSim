@@ -8,6 +8,6 @@ layout(location = 0) out vec3 frag_color;
 
 void main() {
 	gl_PointSize = float(POINT_SIZE);
-	gl_Position = vec4(pos, 0.0, 0.0);
+	gl_Position = vec4(pos, 0.0, 1.0);
 	frag_color = vec3(1.0, 0.0, 1.0);
 }

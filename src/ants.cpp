@@ -44,15 +44,15 @@ void Ants::clear(vk::CommandBuffer& cb, AppState& app_state)
 	cb.dispatch((app_state.histogram_bucket_count + 31) / 32, 1, 1);
 }
 
-void Ants::compute(vk::CommandBuffer& cb, AppState& app_state, uint32_t read_only_buffer_idx)
+void Ants::compute(vk::CommandBuffer& cb, AppState& app_state)
 {
 	cb.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get());
-	cb.bindDescriptorSets(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[STEP_PIPELINE]->dsh.get_sets()[read_only_buffer_idx], {});
+	cb.bindDescriptorSets(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[STEP_PIPELINE]->dsh.get_sets()[app_state.current_frame], {});
 	cb.pushConstants(pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), vk::ShaderStageFlagBits::eCompute, 0, sizeof(PushConstants), &pc);
 	cb.dispatch((app_state.get_render_extent().width + 31) / 32, (app_state.get_render_extent().height + 31) / 32, 1);
 }
 
-void Ants::render(vk::CommandBuffer& cb, AppState& app_state, uint32_t read_only_buffer_idx, const vk::Framebuffer& framebuffer, const vk::RenderPass& render_pass)
+void Ants::render(vk::CommandBuffer& cb, AppState& app_state, const vk::Framebuffer& framebuffer, const vk::RenderPass& render_pass)
 {
 	cb.bindVertexBuffers(0, storage.get_buffer(buffers[ANTS_BUFFER_0 + app_state.current_frame]).get(), {0});
 	cb.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_data[RENDER_PIPELINE]->pipeline.get());
@@ -128,8 +128,8 @@ void Ants::create_descriptor_set()
 	pipeline_data[CLEAR_PIPELINE]->dsh.add_binding(1, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
 	for (uint32_t i = 0; i < frames_in_flight; ++i)
 	{
-		pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(i, 0, storage.get_buffer(buffers[ANTS_BUFFER_0]));
-		pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(i, 1, storage.get_buffer(buffers[ANTS_BUFFER_1]));
+		pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(i, 0, storage.get_buffer(buffers[ANTS_BUFFER_0 + i]));
+		pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(i, 1, storage.get_buffer(buffers[ANTS_BUFFER_1 - i]));
 	}
 	pipeline_data[CLEAR_PIPELINE]->dsh.add_descriptor(0, 0, storage.get_buffer(buffers[ANTS_BUFFER_0]));
 	pipeline_data[CLEAR_PIPELINE]->dsh.add_descriptor(0, 1, storage.get_buffer(buffers[ANTS_BUFFER_1]));
