@@ -60,7 +60,7 @@ void DescriptorSetHandler::add_descriptor(uint32_t set, uint32_t binding, const 
 void DescriptorSetHandler::construct()
 {
 	std::vector<vk::DescriptorSetLayoutBinding> layout_bindings;
-	for (const auto d : descriptors) layout_bindings.push_back(d.dslb);
+	for (const auto& d : descriptors) layout_bindings.push_back(d.dslb);
 	for (uint32_t i = 0; i < set_count; ++i)
 	{
 		vk::DescriptorSetLayoutCreateInfo dslci{};
@@ -71,11 +71,11 @@ void DescriptorSetHandler::construct()
 	}
 
 	std::vector<vk::DescriptorPoolSize> pool_sizes;
-	for (const auto d : descriptors)
+	for (const auto& d : descriptors)
 	{
 		vk::DescriptorPoolSize dps{};
 		dps.type = d.dslb.descriptorType;
-		dps.descriptorCount = std::max(d.dbi.begin()->size(), d.dii.begin()->size());
+		dps.descriptorCount = d.dslb.descriptorCount * set_count;
 		pool_sizes.push_back(dps);
 	}
 
