@@ -17,6 +17,7 @@ void WorkContext::construct(AppState& app_state)
 	for (uint32_t i = 0; i < frames_in_flight; ++i)
 	{
 		syncs.emplace_back(vmc.logical_device.get());
+		device_timers.emplace_back(vmc);
 	}
 	const glm::ivec2 resolution(app_state.get_render_extent().width, app_state.get_render_extent().height);
 	ants.setup_storage(app_state);
@@ -31,6 +32,7 @@ void WorkContext::destruct()
 {
 	vmc.logical_device.get().waitIdle();
 	for (auto& sync : syncs) sync.destruct();
+	for (auto& device_timer : device_timers) device_timer.destruct();
 	syncs.clear();
 	swapchain.destruct();
 	ants.destruct();
@@ -41,6 +43,13 @@ void WorkContext::draw_frame(AppState& app_state)
 {
 	syncs[app_state.current_frame].wait_for_fence(Synchronization::F_RENDER_FINISHED);
 	syncs[app_state.current_frame].reset_fence(Synchronization::F_RENDER_FINISHED);
+	if (app_state.total_frames > frames_in_flight)
+	{
+		for (int i = 0; i < DeviceTimer::TIMER_COUNT; i++) app_state.device_timings[i] = device_timers[app_state.current_frame].get_result_by_idx(i);
+		app_state.frame_time = timers[app_state.current_frame].restart() / float(frames_in_flight);
+		app_state.total_time += app_state.frame_time;
+	}
+	else timers.emplace_back(Timer());
 	vk::ResultValue<uint32_t> image_idx = vmc.logical_device.get().acquireNextImageKHR(swapchain.get(), uint64_t(-1), syncs[app_state.current_frame].get_semaphore(Synchronization::S_IMAGE_AVAILABLE));
 	VE_CHECK(image_idx.result, "Failed to acquire next image!");
 	render(image_idx.value, app_state);
@@ -58,7 +67,10 @@ vk::Extent2D WorkContext::recreate_swapchain(bool vsync)
 void WorkContext::render(uint32_t image_idx, AppState& app_state)
 {
 	vk::CommandBuffer& compute_cb = vcc.begin(vcc.compute_cbs[app_state.current_frame]);
+	device_timers[app_state.current_frame].reset(compute_cb, {DeviceTimer::ANTS_STEP});
+	device_timers[app_state.current_frame].start(compute_cb, DeviceTimer::ANTS_STEP, vk::PipelineStageFlagBits::eComputeShader);
 	ants.compute(compute_cb, app_state);
+	device_timers[app_state.current_frame].stop(compute_cb, DeviceTimer::ANTS_STEP, vk::PipelineStageFlagBits::eComputeShader);
 	compute_cb.end();
 	std::vector<vk::Semaphore> compute_wait_semaphores;
 	std::vector<vk::PipelineStageFlags> compute_wait_stages;
@@ -73,6 +85,8 @@ void WorkContext::render(uint32_t image_idx, AppState& app_state)
 	vmc.get_compute_queue().submit(compute_si);
 
 	vk::CommandBuffer& cb = vcc.begin(vcc.graphics_cbs[app_state.current_frame]);
+	device_timers[app_state.current_frame].reset(cb, {DeviceTimer::RENDERING_ALL});
+	device_timers[app_state.current_frame].start(cb, DeviceTimer::RENDERING_ALL, vk::PipelineStageFlagBits::eTopOfPipe);
 	vk::RenderPassBeginInfo rpbi{};
 	rpbi.sType = vk::StructureType::eRenderPassBeginInfo;
 	rpbi.renderPass = swapchain.get_render_pass().get();
@@ -103,6 +117,7 @@ void WorkContext::render(uint32_t image_idx, AppState& app_state)
 	ants.render(cb, app_state, swapchain.get_framebuffer(image_idx), swapchain.get_render_pass().get());
 	if (app_state.show_ui) ui.draw(cb, app_state);
 	cb.endRenderPass();
+	device_timers[app_state.current_frame].stop(cb, DeviceTimer::RENDERING_ALL, vk::PipelineStageFlagBits::eBottomOfPipe);
 	cb.end();
 
 	std::vector<vk::Semaphore> render_wait_semaphores;

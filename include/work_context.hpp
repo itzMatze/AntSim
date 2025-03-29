@@ -5,6 +5,8 @@
 #include "ants.hpp"
 #include "app_state.hpp"
 #include "ui.hpp"
+#include "util/timer.hpp"
+#include "vk/device_timer.hpp"
 #include "vk/storage.hpp"
 #include "vk/swapchain.hpp"
 #include "vk/vulkan_command_context.hpp"
@@ -31,6 +33,8 @@ private:
 	Ants ants;
 	UI ui;
 	std::vector<Synchronization> syncs;
+	std::vector<DeviceTimer> device_timers;
+	std::vector<Timer<>> timers;
 
 	void render(uint32_t image_idx, AppState& app_state);
 };

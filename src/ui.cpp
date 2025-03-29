@@ -5,6 +5,8 @@
 
 namespace ve
 {
+constexpr float update_weight = 0.1f;
+
 UI::UI(const VulkanMainContext& vmc) : vmc(vmc)
 {}
 
@@ -67,6 +69,12 @@ void UI::draw(vk::CommandBuffer& cb, AppState& app_state)
 	ImGui::NewFrame();
 	ImGui::Begin("AntSim");
 	ImGui::PushItemWidth(80.0f);
+
+	frame_time_smooth = frame_time_smooth * (1 - update_weight) + app_state.frame_time * update_weight;
+	ImGui::Text("%.4f ms; FPS: %.2f", frame_time_smooth * 1000, 1.0 / frame_time_smooth);
+	ImGui::Text("total time: %.4f s", app_state.total_time);
+	ImGui::Text("RENDERING_ALL: %.4f ms", app_state.device_timings[DeviceTimer::RENDERING_ALL]);
+	ImGui::Text("ANTS_STEP: %.4f ms", app_state.device_timings[DeviceTimer::ANTS_STEP]);
 	ImGui::End();
 	ImGui::EndFrame();
 

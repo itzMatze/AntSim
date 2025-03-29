@@ -15,6 +15,7 @@ set(SOURCE_FILES
 	src/util/random_generator.cpp
 	src/vk/command_pool.cpp
 	src/vk/descriptor_set_handler.cpp
+	src/vk/device_timer.cpp
 	src/vk/extensions_handler.cpp
 	src/vk/image.cpp
 	src/vk/instance.cpp

@@ -15,6 +15,7 @@ public:
 	void destruct();
 	void draw(vk::CommandBuffer& cb, AppState& app_state);
 private:
+	float frame_time_smooth = 1.0f/60.0f;
 	const VulkanMainContext& vmc;
 	vk::DescriptorPool imgui_pool;
 };
