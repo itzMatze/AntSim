@@ -17,6 +17,8 @@ layout(binding = 1) writeonly buffer AntBufferOut {
 struct PushConstants
 {
 	uint frame_idx;
+	float frame_time;
+	float total_time;
 };
 
 layout(push_constant) uniform PushConstant { PushConstants pc; };
@@ -28,10 +30,15 @@ void main()
 	if (gl_GlobalInvocationID.x >= ANT_COUNT) return;
 	rng_state = (gl_GlobalInvocationID.x + ANT_COUNT * pc.frame_idx);
 	Ant ant = ants_in[gl_GlobalInvocationID.x];
-	if (dot(ant.dir, ant.dir) == 0.0 || pcg_random_state() < 0.001) ant.dir = vec2(pcg_random_state(-1.0, 1.0), pcg_random_state(-1.0, 1.0));
-	ant.dir += vec2(pcg_random_state(-0.0001, 0.0001), pcg_random_state(-0.0001, 0.0001));
-	ant.dir = normalize(ant.dir) / 1000.0;
-	ant.pos += ant.dir;
+	// sample a new direction if ant has none or if some amount of time passed with some probability
+	const float time_to_new_step = 0.1;
+	uint prev_steps_passed = uint((pc.total_time - pc.frame_time) / time_to_new_step);
+	uint steps_passed = uint(pc.total_time / time_to_new_step);
+	const bool sample_new_direction = dot(ant.dir, ant.dir) == 0.0 || ((steps_passed != prev_steps_passed) && (pcg_random_state() < 0.01));
+	if (sample_new_direction) ant.dir = vec2(pcg_random_state(-1.0, 1.0), pcg_random_state(-1.0, 1.0));
+	ant.dir += vec2(pcg_random_state(-0.01, 0.01), pcg_random_state(-0.01, 0.01));
+	ant.dir = normalize(ant.dir) / 10.0;
+	ant.pos += ant.dir * pc.frame_time;
 	if (ant.pos.x > 1.0)
 	{
 		ant.pos.x = 1.0;

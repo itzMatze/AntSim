@@ -58,6 +58,8 @@ private:
 	struct PushConstants
 	{
 		uint32_t frame_idx;
+		float frame_time;
+		float total_time;
 	} pc;
 
 	void create_pipelines(const RenderPass& render_pass, const AppState& app_state);

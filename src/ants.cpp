@@ -44,11 +44,13 @@ void Ants::clear(vk::CommandBuffer& cb, AppState& app_state)
 
 void Ants::compute(vk::CommandBuffer& cb, AppState& app_state)
 {
+	pc.frame_idx = app_state.total_frames;
+	pc.frame_time = app_state.frame_time;
+	pc.total_time = app_state.total_time;
 	cb.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get());
 	cb.bindDescriptorSets(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[STEP_PIPELINE]->dsh.get_sets()[app_state.current_frame], {});
 	cb.pushConstants(pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), vk::ShaderStageFlagBits::eCompute, 0, sizeof(PushConstants), &pc);
 	cb.dispatch((ant_count + 31) / 32, 1, 1);
-	pc.frame_idx++;
 }
 
 void Ants::render(vk::CommandBuffer& cb, AppState& app_state, const vk::Framebuffer& framebuffer, const vk::RenderPass& render_pass)
