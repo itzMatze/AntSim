@@ -5,12 +5,6 @@
 
 struct AppState {
 public:
-	static constexpr std::array<const char*, 5> colormap_items = {"inferno", "magma", "plasma", "viridis", "greyscale"};
-	int32_t colormap_item_idx = 0;
-	glm::vec2 scaling_limit_values = glm::vec2(0.0f, 5.0f);
-	glm::vec2 histogram_limit_values = glm::vec2(0.0f, 5.0f);
-	const uint32_t histogram_bucket_count = 100;
-	bool show_histogram = false;
 	uint32_t current_frame = 0;
 	uint32_t total_frames = 0;
 	bool vsync = true;

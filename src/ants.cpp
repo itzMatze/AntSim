@@ -21,8 +21,6 @@ void Ants::setup_storage(AppState& app_state)
 
 void Ants::construct(const RenderPass& render_pass, AppState& app_state)
 {
-	// set sane default value for upper limit based on resolution and bucket count
-	app_state.histogram_limit_values.y = (app_state.get_render_extent().width * app_state.get_render_extent().height * 4.0f) / app_state.histogram_bucket_count;
 	create_descriptor_set();
 	create_pipelines(render_pass, app_state);
 }
@@ -41,7 +39,7 @@ void Ants::clear(vk::CommandBuffer& cb, AppState& app_state)
 {
 	cb.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline_data[CLEAR_PIPELINE]->pipeline.get());
 	cb.bindDescriptorSets(vk::PipelineBindPoint::eCompute, pipeline_data[CLEAR_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[CLEAR_PIPELINE]->dsh.get_sets()[0], {});
-	cb.dispatch((app_state.histogram_bucket_count + 31) / 32, 1, 1);
+	cb.dispatch((ant_count + 31) / 32, 1, 1);
 }
 
 void Ants::compute(vk::CommandBuffer& cb, AppState& app_state)
