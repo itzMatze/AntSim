@@ -27,9 +27,10 @@ layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 
 void main()
 {
-	if (gl_GlobalInvocationID.x >= ANT_COUNT) return;
-	rng_state = (gl_GlobalInvocationID.x + ANT_COUNT * pc.frame_idx);
-	Ant ant = ants_in[gl_GlobalInvocationID.x];
+	uint thread_id = gl_GlobalInvocationID.x;
+	if (thread_id >= ANT_COUNT) return;
+	rng_state = (thread_id + ANT_COUNT * pc.frame_idx);
+	Ant ant = ants_in[thread_id];
 	// sample a new direction if ant has none or if some amount of time passed with some probability
 	const float time_to_new_step = 0.1;
 	uint prev_steps_passed = uint((pc.total_time - pc.frame_time) / time_to_new_step);
@@ -59,5 +60,5 @@ void main()
 		ant.pos.y = -1.0;
 		ant.dir.y = -ant.dir.y * 0.1;
 	}
-	ants_out[gl_GlobalInvocationID.x] = ant;
+	ants_out[thread_id] = ant;
 }

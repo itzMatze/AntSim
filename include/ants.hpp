@@ -54,6 +54,7 @@ private:
 	std::array<std::unique_ptr<PipelineData>, PIPELINE_COUNT> pipeline_data;
 
 	uint32_t ant_count = 100;
+	uint32_t point_size = 2;
 
 	struct PushConstants
 	{

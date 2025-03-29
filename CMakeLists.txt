@@ -34,7 +34,8 @@ set(SOURCE_FILES
 	"${PROJECT_SOURCE_DIR}/dependencies/imgui/backends/imgui_impl_vulkan.cpp"
 	"${PROJECT_SOURCE_DIR}/dependencies/imgui/imgui_draw.cpp"
 	"${PROJECT_SOURCE_DIR}/dependencies/imgui/imgui_widgets.cpp"
-	"${PROJECT_SOURCE_DIR}/dependencies/imgui/imgui_tables.cpp")
+	"${PROJECT_SOURCE_DIR}/dependencies/imgui/imgui_tables.cpp"
+)
 
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 find_package(spdlog REQUIRED)
@@ -47,5 +48,6 @@ target_include_directories(AntSim PRIVATE "${PROJECT_SOURCE_DIR}/include"
 	"${SDL3_DIR}/include/"
 	"${GLM_DIR}/"
 	"${PROJECT_SOURCE_DIR}/dependencies/VulkanMemoryAllocator/include/"
-	"${PROJECT_SOURCE_DIR}/dependencies/imgui/")
+	"${PROJECT_SOURCE_DIR}/dependencies/imgui/"
+)
 target_link_libraries(AntSim PRIVATE spdlog::spdlog SDL3::SDL3 Vulkan::Vulkan)

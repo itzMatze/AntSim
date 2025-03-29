@@ -78,7 +78,7 @@ void Ants::create_pipelines(const RenderPass& render_pass, const AppState& app_s
 	{
 		std::array<vk::SpecializationMapEntry, 1> spec_entries;
 		spec_entries[0] = vk::SpecializationMapEntry(0, 0, sizeof(uint32_t));
-		std::array<uint32_t, 1> spec_entries_data{5};
+		std::array<uint32_t, 1> spec_entries_data{point_size};
 		vk::SpecializationInfo spec_info(spec_entries.size(), spec_entries.data(), sizeof(uint32_t) * spec_entries_data.size(), spec_entries_data.data());
 
 		std::vector<ShaderInfo> render_shader_infos(2);
