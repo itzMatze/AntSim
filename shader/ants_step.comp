@@ -2,6 +2,7 @@
 
 #extension GL_GOOGLE_include_directive: require
 #include "ants.glsl"
+#include "random.glsl"
 
 layout(constant_id = 0) const uint ANT_COUNT = 1;
 
@@ -13,10 +14,43 @@ layout(binding = 1) writeonly buffer AntBufferOut {
 	Ant ants_out[];
 };
 
+struct PushConstants
+{
+	uint frame_idx;
+};
+
+layout(push_constant) uniform PushConstant { PushConstants pc; };
+
 layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 
 void main()
 {
 	if (gl_GlobalInvocationID.x >= ANT_COUNT) return;
-	ants_out[gl_GlobalInvocationID.x].pos = ants_in[gl_GlobalInvocationID.x].pos + vec2(0.001 * gl_GlobalInvocationID.x, 0.0);
+	rng_state = (gl_GlobalInvocationID.x + ANT_COUNT * pc.frame_idx);
+	Ant ant = ants_in[gl_GlobalInvocationID.x];
+	if (dot(ant.dir, ant.dir) == 0.0 || pcg_random_state() < 0.001) ant.dir = vec2(pcg_random_state(-1.0, 1.0), pcg_random_state(-1.0, 1.0));
+	ant.dir += vec2(pcg_random_state(-0.0001, 0.0001), pcg_random_state(-0.0001, 0.0001));
+	ant.dir = normalize(ant.dir) / 1000.0;
+	ant.pos += ant.dir;
+	if (ant.pos.x > 1.0)
+	{
+		ant.pos.x = 1.0;
+		ant.dir.x = -ant.dir.x * 0.1;
+	}
+	if (ant.pos.x < -1.0)
+	{
+		ant.pos.x = -1.0;
+		ant.dir.x = -ant.dir.x * 0.1;
+	}
+	if (ant.pos.y > 1.0)
+	{
+		ant.pos.y = 1.0;
+		ant.dir.y = -ant.dir.y * 0.1;
+	}
+	if (ant.pos.y < -1.0)
+	{
+		ant.pos.y = -1.0;
+		ant.dir.y = -ant.dir.y * 0.1;
+	}
+	ants_out[gl_GlobalInvocationID.x] = ant;
 }

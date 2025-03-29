@@ -10,6 +10,7 @@
 struct AntData
 {
 	glm::vec2 pos;
+	glm::vec2 dir;
 };
 
 namespace ve
@@ -56,7 +57,7 @@ private:
 
 	struct PushConstants
 	{
-		float tmp;
+		uint32_t frame_idx;
 	} pc;
 
 	void create_pipelines(const RenderPass& render_pass, const AppState& app_state);
