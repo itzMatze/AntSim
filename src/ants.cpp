@@ -15,8 +15,8 @@ Ants::Ants(const VulkanMainContext& vmc, Storage& storage) : vmc(vmc), storage(s
 void Ants::setup_storage(AppState& app_state)
 {
 	std::vector<AntData> ants_data(ant_count);
-	buffers[ANTS_BUFFER_0] = storage.add_buffer("ants_buffer_0", ants_data, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, false, vmc.queue_family_indices.transfer, vmc.queue_family_indices.compute, vmc.queue_family_indices.graphics);
-	buffers[ANTS_BUFFER_1] = storage.add_buffer("ants_buffer_1", ants_data, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, false, vmc.queue_family_indices.transfer, vmc.queue_family_indices.compute, vmc.queue_family_indices.graphics);
+	buffers[ANTS_BUFFER_0] = storage.add_buffer("ants_buffer_0", ants_data, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, true, vmc.queue_family_indices.transfer, vmc.queue_family_indices.compute, vmc.queue_family_indices.graphics);
+	buffers[ANTS_BUFFER_1] = storage.add_buffer("ants_buffer_1", ants_data, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, true, vmc.queue_family_indices.transfer, vmc.queue_family_indices.compute, vmc.queue_family_indices.graphics);
 }
 
 void Ants::construct(const RenderPass& render_pass, AppState& app_state)
