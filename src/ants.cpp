@@ -69,7 +69,7 @@ void Ants::create_pipelines(const RenderPass& render_pass, const AppState& app_s
 		vk::SpecializationInfo spec_info(spec_entries.size(), spec_entries.data(), sizeof(uint32_t) * spec_entries_data.size(), spec_entries_data.data());
 		ShaderInfo clear_ants_shader_info = ShaderInfo{"ants_clear.comp", vk::ShaderStageFlagBits::eCompute, spec_info};
 		Pipeline::ComputeSettings settings;
-		settings.set_layout = &pipeline_data[CLEAR_PIPELINE]->dsh.get_layouts()[0];
+		settings.set_layout = &pipeline_data[CLEAR_PIPELINE]->dsh.get_layout();
 		settings.shader_info = &clear_ants_shader_info;
 		settings.push_constant_byte_size = sizeof(PushConstants);
 		pipeline_data[CLEAR_PIPELINE]->pipeline.construct(settings);
@@ -85,7 +85,7 @@ void Ants::create_pipelines(const RenderPass& render_pass, const AppState& app_s
 		render_shader_infos[1] = ShaderInfo{"ants.frag", vk::ShaderStageFlagBits::eFragment};
 		Pipeline::GraphicsSettings settings;
 		settings.render_pass = &render_pass;
-		settings.set_layout = &pipeline_data[RENDER_PIPELINE]->dsh.get_layouts()[0];
+		settings.set_layout = &pipeline_data[RENDER_PIPELINE]->dsh.get_layout();
 		settings.shader_infos = &render_shader_infos;
 		settings.polygon_mode = vk::PolygonMode::ePoint;
 
@@ -113,7 +113,7 @@ void Ants::create_pipelines(const RenderPass& render_pass, const AppState& app_s
 		vk::SpecializationInfo spec_info(spec_entries.size(), spec_entries.data(), sizeof(uint32_t) * spec_entries_data.size(), spec_entries_data.data());
 		ShaderInfo ants_step_shader_info = ShaderInfo{"ants_step.comp", vk::ShaderStageFlagBits::eCompute, spec_info};
 		Pipeline::ComputeSettings settings;
-		settings.set_layout = &pipeline_data[STEP_PIPELINE]->dsh.get_layouts()[0];
+		settings.set_layout = &pipeline_data[STEP_PIPELINE]->dsh.get_layout();
 		settings.shader_info = &ants_step_shader_info;
 		settings.push_constant_byte_size = sizeof(PushConstants);
 		pipeline_data[STEP_PIPELINE]->pipeline.construct(settings);

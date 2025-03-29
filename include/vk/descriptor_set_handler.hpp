@@ -21,7 +21,7 @@ public:
 	// third, construct the descriptor set
 	void construct();
 	void destruct();
-	const std::vector<vk::DescriptorSetLayout>& get_layouts() const;
+	const vk::DescriptorSetLayout& get_layout() const;
 	const std::vector<vk::DescriptorSet>& get_sets() const;
 
 private:

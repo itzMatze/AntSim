@@ -129,9 +129,9 @@ void DescriptorSetHandler::destruct()
 	sets.clear();
 }
 
-const std::vector<vk::DescriptorSetLayout>& DescriptorSetHandler::get_layouts() const
+const vk::DescriptorSetLayout& DescriptorSetHandler::get_layout() const
 {
-	return layouts;
+	return layouts[0];
 }
 
 const std::vector<vk::DescriptorSet>& DescriptorSetHandler::get_sets() const
