@@ -50,4 +50,5 @@ target_include_directories(AntSim PRIVATE "${PROJECT_SOURCE_DIR}/include"
 	"${PROJECT_SOURCE_DIR}/dependencies/VulkanMemoryAllocator/include/"
 	"${PROJECT_SOURCE_DIR}/dependencies/imgui/"
 )
-target_link_libraries(AntSim PRIVATE spdlog::spdlog SDL3::SDL3 Vulkan::Vulkan)
+target_link_libraries(AntSim PRIVATE spdlog::spdlog SDL3::SDL3)
+target_compile_definitions(AntSim PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1 IMGUI_IMPL_VULKAN_NO_PROTOTYPES=1)

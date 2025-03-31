@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vulkan/vulkan.hpp>
 #include "window.hpp"
 #include "vk/logical_device.hpp"
 #include "vk/physical_device.hpp"
@@ -12,7 +13,6 @@ class VulkanMainContext
 {
 public:
 	VulkanMainContext() = default;
-	void construct();
 	void construct(const uint32_t width, const uint32_t height);
 	void destruct();
 	std::vector<vk::SurfaceFormatKHR> get_surface_formats() const;
@@ -30,6 +30,7 @@ private:
 	void setup_debug_messenger();
 
 public:
+	vk::detail::DynamicLoader dl;
 	std::unique_ptr<Window> window;
 	Instance instance;
 	vk::DebugUtilsMessengerEXT debug_messenger;

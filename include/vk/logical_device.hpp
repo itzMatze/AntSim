@@ -1,8 +1,8 @@
 #pragma once
 
 #include <unordered_map>
+#include <vulkan/vulkan.hpp>
 
-#include "vk/common.hpp"
 #include "vk/physical_device.hpp"
 
 namespace ve

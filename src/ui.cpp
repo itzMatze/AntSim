@@ -50,6 +50,10 @@ void UI::construct(VulkanCommandContext& vcc, const RenderPass& render_pass, uin
 	init_info.ImageCount = frames;
 	init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
+	ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_3, [](const char* function_name, void* userData) {
+		return VULKAN_HPP_DEFAULT_DISPATCHER.vkGetInstanceProcAddr(VkInstance(userData), function_name);
+	}, (void*)(vmc.instance.get()));
+
 	ImGui_ImplVulkan_Init(&init_info);
 	ImGui::StyleColorsDark();
 }

@@ -2,7 +2,6 @@
 
 #include <set>
 
-#include "vk/common.hpp"
 #include "vk/ve_log.hpp"
 #include "vk/physical_device.hpp"
 
@@ -63,7 +62,6 @@ void LogicalDevice::construct(const PhysicalDevice& p_device, const QueueFamilyI
 	queues.emplace(QueueIndex::Compute, device.getQueue(queue_family_indices.compute, 0));
 	queues.emplace(QueueIndex::Transfer, device.getQueue(queue_family_indices.transfer, 0));
 	if (queue_family_indices.present != uint32_t(-1)) queues.emplace(QueueIndex::Present, device.getQueue(queue_family_indices.present, 0));
-	VULKAN_HPP_DEFAULT_DISPATCHER.init(device);
 }
 
 void LogicalDevice::destruct()

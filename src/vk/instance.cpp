@@ -1,13 +1,12 @@
 #include "vk/instance.hpp"
 
 #include "vk/ve_log.hpp"
+#include <vulkan/vulkan.hpp>
 
 namespace ve
 {
 void Instance::construct(std::vector<const char*> required_extensions)
 {
-	PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
-	VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 	required_extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 	required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	const std::vector<const char*> optional_extensions{};
@@ -49,7 +48,6 @@ void Instance::construct(std::vector<const char*> required_extensions)
 #endif
 
 	instance = vk::createInstance(ici);
-	VULKAN_HPP_DEFAULT_DISPATCHER.init(instance);
 }
 
 void Instance::destruct()

@@ -1,9 +1,8 @@
 #pragma once
 
-#include "vk/common.hpp"
-#include "SDL3/SDL_video.h"
-
 #include <vector>
+#include <vulkan/vulkan.hpp>
+#include "SDL3/SDL_video.h"
 
 class Window
 {

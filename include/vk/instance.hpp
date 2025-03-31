@@ -1,8 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
-#include "vk/common.hpp"
 #include "vk/extensions_handler.hpp"
 
 namespace ve
@@ -21,6 +21,5 @@ private:
 	vk::Instance instance;
 	ExtensionsHandler extensions_handler;
 	ExtensionsHandler validation_handler;
-	vk::detail::DynamicLoader dl;
 };
 } // namespace ve

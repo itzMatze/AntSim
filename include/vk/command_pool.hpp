@@ -1,6 +1,7 @@
 #pragma once
 
-#include "vk/common.hpp"
+#include <vector>
+#include <vulkan/vulkan.hpp>
 
 namespace ve
 {

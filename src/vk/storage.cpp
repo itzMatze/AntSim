@@ -1,6 +1,5 @@
 #include "vk/storage.hpp"
 
-#include "vk/common.hpp"
 #include "vk/ve_log.hpp"
 
 namespace ve

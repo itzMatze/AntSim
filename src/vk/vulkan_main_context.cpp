@@ -1,6 +1,8 @@
 #include "vk/vulkan_main_context.hpp"
 
 #include "vk/ve_log.hpp"
+#define VMA_STATIC_VULKAN_FUNCTIONS 0
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
 
@@ -30,12 +32,16 @@ namespace ve
 {
 void VulkanMainContext::construct(const uint32_t width, const uint32_t height)
 {
+	PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+	VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 	window = std::make_unique<Window>(width, height);
 	instance.construct(window->get_required_extensions());
+	VULKAN_HPP_DEFAULT_DISPATCHER.init(instance.get());
 	surface = window->create_surface(instance.get());
 	physical_device.construct(instance, surface);
 	queue_family_indices = physical_device.get_queue_families(surface);
 	logical_device.construct(physical_device, queue_family_indices, queues);
+	VULKAN_HPP_DEFAULT_DISPATCHER.init(logical_device.get());
 	create_vma_allocator();
 	setup_debug_messenger();
 }
@@ -45,8 +51,7 @@ void VulkanMainContext::destruct()
 	vmaDestroyAllocator(va);
 	instance.get().destroySurfaceKHR(surface);
 	logical_device.destruct();
-	auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) instance.get().getProcAddr("vkDestroyDebugUtilsMessengerEXT");
-	func(instance.get(), debug_messenger, nullptr);
+	instance.get().destroyDebugUtilsMessengerEXT(debug_messenger, nullptr, VULKAN_HPP_DEFAULT_DISPATCHER);
 	instance.destruct();
 	if (window) window->destruct();
 }
@@ -88,12 +93,18 @@ const vk::Queue& VulkanMainContext::get_present_queue() const
 
 void VulkanMainContext::create_vma_allocator()
 {
+	PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+	PFN_vkGetDeviceProcAddr vkGetDeviceProcAddr = dl.getProcAddress<PFN_vkGetDeviceProcAddr>("vkGetDeviceProcAddr");
 	VmaAllocatorCreateInfo vaci{};
 	vaci.instance = instance.get();
 	vaci.physicalDevice = physical_device.get();
 	vaci.device = logical_device.get();
 	vaci.vulkanApiVersion = VK_API_VERSION_1_3;
 	vaci.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+	VmaVulkanFunctions vvf{};
+	vvf.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+	vvf.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+	vaci.pVulkanFunctions = &vvf;
 	vmaCreateAllocator(&vaci, &va);
 }
 
