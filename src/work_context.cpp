@@ -9,6 +9,7 @@ WorkContext::WorkContext(const VulkanMainContext& vmc, VulkanCommandContext& vcc
 
 void WorkContext::construct(AppState& app_state)
 {
+	antlog::debug("Storage info\n{}", storage.get_memory_info());
 	vcc.add_graphics_buffers(frames_in_flight);
 	vcc.add_compute_buffers(2);
 	vcc.add_transfer_buffers(1);

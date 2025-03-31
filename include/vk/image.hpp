@@ -27,6 +27,7 @@ namespace ve
 		vk::Image& get_image();
 		vk::ImageView get_view() const;
 		vk::Sampler get_sampler() const;
+		VmaAllocationInfo get_allocation_info() const;
 
 	private:
 		const VulkanMainContext& vmc;

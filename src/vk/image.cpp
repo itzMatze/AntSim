@@ -292,6 +292,13 @@ vk::Sampler Image::get_sampler() const
 	return sampler;
 }
 
+VmaAllocationInfo Image::get_allocation_info() const
+{
+	VmaAllocationInfo alloc_info;
+	vmaGetAllocationInfo(vmc.va, vmaa, &alloc_info);
+	return alloc_info;
+}
+
 void Image::generate_mipmaps(VulkanCommandContext& vcc)
 {
 	vk::CommandBuffer& cb = vcc.get_one_time_graphics_buffer();

@@ -210,6 +210,13 @@ public:
 		return vmc.logical_device.get().getBufferAddress(buffer_device_adress_i);
 	}
 
+	VmaAllocationInfo get_allocation_info() const
+	{
+		VmaAllocationInfo alloc_info;
+		vmaGetAllocationInfo(vmc.va, vmaa, &alloc_info);
+		return alloc_info;
+	}
+
 	void* pNext = nullptr;
 
 private:
