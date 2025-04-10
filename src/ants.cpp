@@ -44,12 +44,12 @@ void Ants::clear(vk::CommandBuffer& cb, AppState& app_state)
 
 void Ants::compute(vk::CommandBuffer& cb, AppState& app_state)
 {
-	pc.frame_idx = app_state.total_frames;
-	pc.frame_time = app_state.frame_time;
-	pc.total_time = app_state.total_time;
+	spc.frame_idx = app_state.total_frames;
+	spc.frame_time = app_state.frame_time;
+	spc.total_time = app_state.total_time;
 	cb.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get());
 	cb.bindDescriptorSets(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[STEP_PIPELINE]->dsh.get_sets()[app_state.current_frame], {});
-	cb.pushConstants(pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), vk::ShaderStageFlagBits::eCompute, 0, sizeof(PushConstants), &pc);
+	cb.pushConstants(pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), vk::ShaderStageFlagBits::eCompute, 0, sizeof(StepPushConstants), &spc);
 	cb.dispatch((ant_count + 31) / 32, 1, 1);
 }
 
@@ -58,6 +58,7 @@ void Ants::render(vk::CommandBuffer& cb, AppState& app_state, const vk::Framebuf
 	cb.bindVertexBuffers(0, storage.get_buffer(buffers[ANTS_BUFFER_0 + app_state.current_frame]).get(), {0});
 	cb.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_data[RENDER_PIPELINE]->pipeline.get());
 	cb.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data[RENDER_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[RENDER_PIPELINE]->dsh.get_sets()[app_state.current_frame], {});
+	cb.pushConstants(pipeline_data[RENDER_PIPELINE]->pipeline.get_layout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(RenderPushConstants), &rpc);
 	cb.draw(ant_count, 1, 0, 0);
 }
 
@@ -72,7 +73,7 @@ void Ants::create_pipelines(const RenderPass& render_pass, const AppState& app_s
 		Pipeline::ComputeSettings settings;
 		settings.set_layout = &pipeline_data[CLEAR_PIPELINE]->dsh.get_layout();
 		settings.shader_info = &clear_ants_shader_info;
-		settings.push_constant_byte_size = sizeof(PushConstants);
+		settings.push_constant_byte_size = sizeof(StepPushConstants);
 		pipeline_data[CLEAR_PIPELINE]->pipeline.construct(settings);
 	}
 	{
@@ -89,6 +90,8 @@ void Ants::create_pipelines(const RenderPass& render_pass, const AppState& app_s
 		settings.set_layout = &pipeline_data[RENDER_PIPELINE]->dsh.get_layout();
 		settings.shader_infos = &render_shader_infos;
 		settings.polygon_mode = vk::PolygonMode::ePoint;
+		std::vector<vk::PushConstantRange> pcrs = {vk::PushConstantRange(vk::ShaderStageFlagBits::eVertex, 0, sizeof(RenderPushConstants))};
+		settings.pcrs = &pcrs;
 
 		vk::VertexInputBindingDescription binding_description{};
 		binding_description.binding = 0;
@@ -104,7 +107,6 @@ void Ants::create_pipelines(const RenderPass& render_pass, const AppState& app_s
 		settings.attribute_description = &attribute_descriptions;
 
 		settings.primitive_topology = vk::PrimitiveTopology::ePointList;
-		settings.pcrs = nullptr;
 		pipeline_data[RENDER_PIPELINE]->pipeline.construct(settings);
 	}
 	{
@@ -116,7 +118,7 @@ void Ants::create_pipelines(const RenderPass& render_pass, const AppState& app_s
 		Pipeline::ComputeSettings settings;
 		settings.set_layout = &pipeline_data[STEP_PIPELINE]->dsh.get_layout();
 		settings.shader_info = &ants_step_shader_info;
-		settings.push_constant_byte_size = sizeof(PushConstants);
+		settings.push_constant_byte_size = sizeof(StepPushConstants);
 		pipeline_data[STEP_PIPELINE]->pipeline.construct(settings);
 	}
 }

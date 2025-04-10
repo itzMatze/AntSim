@@ -56,12 +56,18 @@ private:
 	uint32_t ant_count = 100;
 	uint32_t point_size = 2;
 
-	struct PushConstants
+	struct StepPushConstants
 	{
 		uint32_t frame_idx;
 		float frame_time;
 		float total_time;
-	} pc;
+	} spc;
+
+	struct RenderPushConstants
+	{
+		glm::vec2 range_min = glm::vec2(-1.0, -1.0);
+		glm::vec2 range_max = glm::vec2(1.0, 1.0);
+	} rpc;
 
 	void create_pipelines(const RenderPass& render_pass, const AppState& app_state);
 	void create_descriptor_set();
