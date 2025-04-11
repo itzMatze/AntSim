@@ -1,5 +1,4 @@
 #include "ants.hpp"
-#include "vk/common.hpp"
 #include "vk/descriptor_set_handler.hpp"
 #include <vulkan/vulkan_handles.hpp>
 
@@ -8,15 +7,14 @@ namespace ve
 Ants::Ants(const VulkanMainContext& vmc, Storage& storage) : vmc(vmc), storage(storage)
 {
 	pipeline_data[CLEAR_PIPELINE] = std::make_unique<PipelineData>(PipelineData{Pipeline(vmc), DescriptorSetHandler(vmc, 1)});
-	pipeline_data[RENDER_PIPELINE] = std::make_unique<PipelineData>(PipelineData{Pipeline(vmc), DescriptorSetHandler(vmc, frames_in_flight)});
-	pipeline_data[STEP_PIPELINE] = std::make_unique<PipelineData>(PipelineData{Pipeline(vmc), DescriptorSetHandler(vmc, frames_in_flight)});
+	pipeline_data[RENDER_PIPELINE] = std::make_unique<PipelineData>(PipelineData{Pipeline(vmc), DescriptorSetHandler(vmc, 1)});
+	pipeline_data[STEP_PIPELINE] = std::make_unique<PipelineData>(PipelineData{Pipeline(vmc), DescriptorSetHandler(vmc, 1)});
 }
 
 void Ants::setup_storage(AppState& app_state)
 {
 	std::vector<AntData> ants_data(ant_count);
-	buffers[ANTS_BUFFER_0] = storage.add_buffer("ants_buffer_0", ants_data, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, true, vmc.queue_family_indices.transfer, vmc.queue_family_indices.compute, vmc.queue_family_indices.graphics);
-	buffers[ANTS_BUFFER_1] = storage.add_buffer("ants_buffer_1", ants_data, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, true, vmc.queue_family_indices.transfer, vmc.queue_family_indices.compute, vmc.queue_family_indices.graphics);
+	buffers[ANTS_BUFFER] = storage.add_buffer("ants_buffer", ants_data, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, true, vmc.queue_family_indices.transfer, vmc.queue_family_indices.compute, vmc.queue_family_indices.graphics);
 }
 
 void Ants::construct(const RenderPass& render_pass, AppState& app_state)
@@ -48,16 +46,16 @@ void Ants::compute(vk::CommandBuffer& cb, AppState& app_state)
 	spc.frame_time = app_state.frame_time;
 	spc.total_time = app_state.total_time;
 	cb.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get());
-	cb.bindDescriptorSets(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[STEP_PIPELINE]->dsh.get_sets()[app_state.current_frame], {});
+	cb.bindDescriptorSets(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[STEP_PIPELINE]->dsh.get_sets()[0], {});
 	cb.pushConstants(pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), vk::ShaderStageFlagBits::eCompute, 0, sizeof(StepPushConstants), &spc);
 	cb.dispatch((ant_count + 31) / 32, 1, 1);
 }
 
 void Ants::render(vk::CommandBuffer& cb, AppState& app_state, const vk::Framebuffer& framebuffer, const vk::RenderPass& render_pass)
 {
-	cb.bindVertexBuffers(0, storage.get_buffer(buffers[ANTS_BUFFER_0 + app_state.current_frame]).get(), {0});
+	cb.bindVertexBuffers(0, storage.get_buffer(buffers[ANTS_BUFFER]).get(), {0});
 	cb.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_data[RENDER_PIPELINE]->pipeline.get());
-	cb.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data[RENDER_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[RENDER_PIPELINE]->dsh.get_sets()[app_state.current_frame], {});
+	cb.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data[RENDER_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[RENDER_PIPELINE]->dsh.get_sets()[0], {});
 	cb.pushConstants(pipeline_data[RENDER_PIPELINE]->pipeline.get_layout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(RenderPushConstants), &rpc);
 	cb.draw(ant_count, 1, 0, 0);
 }
@@ -126,16 +124,9 @@ void Ants::create_pipelines(const RenderPass& render_pass, const AppState& app_s
 void Ants::create_descriptor_set()
 {
 	pipeline_data[STEP_PIPELINE]->dsh.add_binding(0, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
-	pipeline_data[STEP_PIPELINE]->dsh.add_binding(1, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
 	pipeline_data[CLEAR_PIPELINE]->dsh.add_binding(0, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
-	pipeline_data[CLEAR_PIPELINE]->dsh.add_binding(1, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
-	for (uint32_t i = 0; i < frames_in_flight; ++i)
-	{
-		pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(i, 0, storage.get_buffer(buffers[ANTS_BUFFER_0 + i]));
-		pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(i, 1, storage.get_buffer(buffers[ANTS_BUFFER_1 - i]));
-	}
-	pipeline_data[CLEAR_PIPELINE]->dsh.add_descriptor(0, 0, storage.get_buffer(buffers[ANTS_BUFFER_0]));
-	pipeline_data[CLEAR_PIPELINE]->dsh.add_descriptor(0, 1, storage.get_buffer(buffers[ANTS_BUFFER_1]));
+	pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(0, 0, storage.get_buffer(buffers[ANTS_BUFFER]));
+	pipeline_data[CLEAR_PIPELINE]->dsh.add_descriptor(0, 0, storage.get_buffer(buffers[ANTS_BUFFER]));
 	for (std::unique_ptr<PipelineData>& pipeline_datum : pipeline_data) pipeline_datum->dsh.construct();
 }
 } // namespace ve

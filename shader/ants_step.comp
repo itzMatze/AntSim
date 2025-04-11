@@ -1,18 +1,16 @@
 #version 460
 
 #extension GL_GOOGLE_include_directive: require
-#include "ants.glsl"
+#include "ants_struct.glsl"
 #include "random.glsl"
 
 layout(constant_id = 0) const uint ANT_COUNT = 1;
 
-layout(binding = 0) readonly buffer AntBufferIn {
-	Ant ants_in[];
+layout(binding = 0) buffer AntBuffer {
+	Ant ants[];
 };
 
-layout(binding = 1) writeonly buffer AntBufferOut {
-	Ant ants_out[];
-};
+#include "ants_functions.glsl"
 
 struct PushConstants
 {
@@ -28,9 +26,9 @@ layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 void main()
 {
 	uint thread_id = gl_GlobalInvocationID.x;
-	if (thread_id >= ANT_COUNT) return;
+	if (!is_valid_ant(thread_id)) return;
 	rng_state = (thread_id + ANT_COUNT * pc.frame_idx);
-	Ant ant = ants_in[thread_id];
+	Ant ant = ants[thread_id];
 	// sample a new direction if ant has none or if some amount of time passed with some probability
 	const float time_to_new_step = 0.1;
 	uint prev_steps_passed = uint((pc.total_time - pc.frame_time) / time_to_new_step);
@@ -60,5 +58,5 @@ void main()
 		ant.pos.y = -1.0;
 		ant.dir.y = -ant.dir.y * 0.1;
 	}
-	ants_out[thread_id] = ant;
+	ants[thread_id] = ant;
 }

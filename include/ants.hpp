@@ -29,8 +29,7 @@ public:
 private:
 	enum Buffers
 	{
-		ANTS_BUFFER_0 = 0,
-		ANTS_BUFFER_1 = 1,
+		ANTS_BUFFER = 0,
 		BUFFER_COUNT
 	};
 
