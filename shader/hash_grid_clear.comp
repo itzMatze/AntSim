@@ -1,0 +1,20 @@
+#version 460
+
+#extension GL_GOOGLE_include_directive: require
+#include "hash_grid_struct.glsl"
+
+layout(constant_id = 0) const uint HASH_GRID_CAPACITY = 1;
+
+layout(binding = 0) buffer HashGridBuffer {
+	HashGridCell hash_grid[];
+};
+
+#include "hash_grid_functions.glsl"
+
+layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+void main()
+{
+	if (!is_valid_hash_grid(gl_GlobalInvocationID.x)) return;
+	clear_hash_grid_cell(gl_GlobalInvocationID.x);
+}
