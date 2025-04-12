@@ -24,7 +24,7 @@ public:
 	void construct(AppState& app_state);
 	void destruct();
 	void draw_frame(AppState& app_state);
-	vk::Extent2D recreate_swapchain(bool vsync);
+	vk::Extent2D resize(bool vsync);
 
 private:
 	const VulkanMainContext& vmc;

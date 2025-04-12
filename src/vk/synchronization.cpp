@@ -5,6 +5,9 @@
 namespace ve
 {
 Synchronization::Synchronization(const vk::Device& logical_device) : device(logical_device)
+{}
+
+void Synchronization::construct()
 {
 	for (uint32_t i = 0; i < SEMAPHORE_COUNT; ++i)
 	{

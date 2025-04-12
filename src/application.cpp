@@ -53,7 +53,10 @@ int run_application(glm::ivec2 window_resolution)
 		}
 		catch (const vk::OutOfDateKHRError e)
 		{
-			app_state.set_window_extent(gpu_context.wc.recreate_swapchain(app_state.vsync));
+			gpu_context.vmc.logical_device.get().waitIdle();
+			app_state.current_frame = 0;
+			app_state.total_frames = 0;
+			app_state.set_window_extent(gpu_context.wc.resize(app_state.vsync));
 		}
 		while (SDL_PollEvent(&e))
 		{

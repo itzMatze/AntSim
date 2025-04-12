@@ -21,6 +21,7 @@ void WorkContext::construct(AppState& app_state)
 		syncs.emplace_back(vmc.logical_device.get());
 		device_timers.emplace_back(vmc);
 	}
+	for (auto& sync : syncs) sync.construct();
 	const glm::ivec2 resolution(app_state.get_render_extent().width, app_state.get_render_extent().height);
 	ants.setup_storage(app_state);
 	hash_grid.setup_storage(app_state);
@@ -63,10 +64,12 @@ void WorkContext::draw_frame(AppState& app_state)
 	app_state.total_frames++;
 }
 
-vk::Extent2D WorkContext::recreate_swapchain(bool vsync)
+vk::Extent2D WorkContext::resize(bool vsync)
 {
 	vmc.logical_device.get().waitIdle();
 	swapchain.recreate(vsync);
+	for (auto& sync : syncs) sync.destruct();
+	for (auto& sync : syncs) sync.construct();
 	return swapchain.get_extent();
 }
 
