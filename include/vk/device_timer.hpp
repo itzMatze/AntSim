@@ -11,6 +11,7 @@ public:
 	enum TimerNames {
 		RENDERING_ALL = 0,
 		ANTS_STEP = 1,
+		HASH_GRID_STEP = 2,
 		TIMER_COUNT
 	};
 

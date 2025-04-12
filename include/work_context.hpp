@@ -4,6 +4,7 @@
 
 #include "ants.hpp"
 #include "app_state.hpp"
+#include "hash_grid.hpp"
 #include "ui.hpp"
 #include "util/timer.hpp"
 #include "vk/device_timer.hpp"
@@ -31,6 +32,7 @@ private:
 	Storage storage;
 	Swapchain swapchain;
 	Ants ants;
+	HashGrid hash_grid;
 	UI ui;
 	std::vector<Synchronization> syncs;
 	std::vector<DeviceTimer> device_timers;

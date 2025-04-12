@@ -34,7 +34,7 @@ void dispatch_pressed_keys(EventHandler& event_handler, AppState& app_state)
 	}
 }
 
-int run_application(glm::ivec2 grid_resolution, glm::ivec2 window_resolution)
+int run_application(glm::ivec2 window_resolution)
 {
 	AppState app_state;
 	app_state.set_render_extent(vk::Extent2D(window_resolution.x, window_resolution.y));

@@ -17,5 +17,5 @@ int main(int argc, char* argv[])
 	auto combined_logger = std::make_shared<spdlog::logger>("default_logger", sinks.begin(), sinks.end());
 	spdlog::set_default_logger(combined_logger);
 	spdlog::set_level(spdlog::level::debug);
-	return run_application(glm::ivec2(1000, 1000), glm::ivec2(1000, 1000));
+	return run_application(glm::ivec2(1000, 1000));
 }

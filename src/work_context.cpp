@@ -1,10 +1,11 @@
 #include "work_context.hpp"
 #include <vulkan/vulkan_enums.hpp>
+#include <vulkan/vulkan_structs.hpp>
 
 namespace ve
 {
 WorkContext::WorkContext(const VulkanMainContext& vmc, VulkanCommandContext& vcc)
-	: vmc(vmc), vcc(vcc), storage(vmc, vcc), swapchain(vmc, vcc, storage), ants(vmc, storage), ui(vmc)
+	: vmc(vmc), vcc(vcc), storage(vmc, vcc), swapchain(vmc, vcc, storage), ants(vmc, storage), hash_grid(vmc, storage), ui(vmc)
 {}
 
 void WorkContext::construct(AppState& app_state)
@@ -22,10 +23,13 @@ void WorkContext::construct(AppState& app_state)
 	}
 	const glm::ivec2 resolution(app_state.get_render_extent().width, app_state.get_render_extent().height);
 	ants.setup_storage(app_state);
+	hash_grid.setup_storage(app_state);
 	ants.construct(swapchain.get_render_pass(), app_state);
+	hash_grid.construct(swapchain.get_render_pass(), app_state);
 	ui.construct(vcc, swapchain.get_render_pass(), frames_in_flight);
 	vk::CommandBuffer& cb = vcc.get_one_time_compute_buffer();
 	ants.clear(cb, app_state);
+	hash_grid.clear(cb, app_state);
 	vcc.submit_compute(cb, true);
 }
 
@@ -37,6 +41,7 @@ void WorkContext::destruct()
 	syncs.clear();
 	swapchain.destruct();
 	ants.destruct();
+	hash_grid.destruct();
 	ui.destruct();
 }
 
@@ -68,10 +73,16 @@ vk::Extent2D WorkContext::recreate_swapchain(bool vsync)
 void WorkContext::render(uint32_t image_idx, AppState& app_state)
 {
 	vk::CommandBuffer& compute_cb = vcc.begin(vcc.compute_cbs[app_state.current_frame]);
-	device_timers[app_state.current_frame].reset(compute_cb, {DeviceTimer::ANTS_STEP});
+	device_timers[app_state.current_frame].reset(compute_cb, {DeviceTimer::ANTS_STEP, DeviceTimer::HASH_GRID_STEP});
 	device_timers[app_state.current_frame].start(compute_cb, DeviceTimer::ANTS_STEP, vk::PipelineStageFlagBits::eComputeShader);
 	ants.compute(compute_cb, app_state);
 	device_timers[app_state.current_frame].stop(compute_cb, DeviceTimer::ANTS_STEP, vk::PipelineStageFlagBits::eComputeShader);
+	const Buffer& buffer = storage.get_buffer_by_name("hash_grid_buffer");
+	vk::BufferMemoryBarrier barrier(vk::AccessFlagBits::eMemoryWrite, vk::AccessFlagBits::eMemoryRead, vmc.queue_family_indices.compute, vmc.queue_family_indices.compute, buffer.get(), 0, buffer.get_byte_size());
+	compute_cb.pipelineBarrier(vk::PipelineStageFlagBits::eComputeShader, vk::PipelineStageFlagBits::eComputeShader, vk::DependencyFlagBits::eDeviceGroup, {}, {barrier}, {});
+	device_timers[app_state.current_frame].start(compute_cb, DeviceTimer::HASH_GRID_STEP, vk::PipelineStageFlagBits::eComputeShader);
+	hash_grid.compute(compute_cb, app_state);
+	device_timers[app_state.current_frame].stop(compute_cb, DeviceTimer::HASH_GRID_STEP, vk::PipelineStageFlagBits::eComputeShader);
 	compute_cb.end();
 	std::vector<vk::Semaphore> compute_wait_semaphores;
 	std::vector<vk::PipelineStageFlags> compute_wait_stages;
@@ -116,6 +127,7 @@ void WorkContext::render(uint32_t image_idx, AppState& app_state)
 	cb.setScissor(0, scissor);
 
 	ants.render(cb, app_state, swapchain.get_framebuffer(image_idx), swapchain.get_render_pass().get());
+	hash_grid.render(cb, app_state, swapchain.get_framebuffer(image_idx), swapchain.get_render_pass().get());
 	if (app_state.show_ui) ui.draw(cb, app_state);
 	cb.endRenderPass();
 	device_timers[app_state.current_frame].stop(cb, DeviceTimer::RENDERING_ALL, vk::PipelineStageFlagBits::eBottomOfPipe);

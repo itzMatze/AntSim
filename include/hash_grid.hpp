@@ -7,20 +7,23 @@
 #include "vk/pipeline.hpp"
 #include "vk/storage.hpp"
 
-struct AntData
+struct HashGridCellData
 {
-	glm::vec2 pos;
-	glm::vec2 dir;
-	float distance_to_poi;
-	uint32_t state_bits;
+	glm::ivec2 index;
+	uint active_flags;
+	uint food_amount;
+	float distance_to_nest;
+	float distance_to_nest_age;
+	float distance_to_food;
+	float distance_to_food_age;
 };
 
 namespace ve
 {
-class Ants
+class HashGrid
 {
 public:
-	Ants(const VulkanMainContext& vmc, Storage& storage);
+	HashGrid(const VulkanMainContext& vmc, Storage& storage);
 	void setup_storage(AppState& app_state);
 	void construct(const RenderPass& render_pass, AppState& app_state);
 	void destruct();
@@ -31,7 +34,7 @@ public:
 private:
 	enum Buffers
 	{
-		ANTS_BUFFER = 0,
+		HASH_GRID_BUFFER = 0,
 		BUFFER_COUNT
 	};
 
@@ -53,8 +56,6 @@ private:
 	Storage& storage;
 	std::array<int32_t, BUFFER_COUNT> buffers;
 	std::array<std::unique_ptr<PipelineData>, PIPELINE_COUNT> pipeline_data;
-
-	uint32_t point_size = 2;
 
 	struct StepPushConstants
 	{

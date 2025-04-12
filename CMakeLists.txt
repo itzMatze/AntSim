@@ -9,6 +9,7 @@ set(SOURCE_FILES
 	src/ants.cpp
 	src/application.cpp
 	src/event_handler.cpp
+	src/hash_grid.cpp
 	src/ui.cpp
 	src/window.cpp
 	src/work_context.cpp

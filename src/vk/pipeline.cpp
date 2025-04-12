@@ -30,8 +30,11 @@ void Pipeline::construct(const GraphicsSettings& settings)
 
 	vk::PipelineVertexInputStateCreateInfo pvisci{};
 	pvisci.sType = vk::StructureType::ePipelineVertexInputStateCreateInfo;
-	pvisci.vertexBindingDescriptionCount = 1;
-	pvisci.pVertexBindingDescriptions = settings.binding_descriptions;
+	if (settings.binding_descriptions)
+	{
+		pvisci.vertexBindingDescriptionCount = 1;
+		pvisci.pVertexBindingDescriptions = settings.binding_descriptions;
+	}
 	if (settings.attribute_description)
 	{
 		pvisci.vertexAttributeDescriptionCount = settings.attribute_description->size();

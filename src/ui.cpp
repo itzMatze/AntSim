@@ -79,6 +79,7 @@ void UI::draw(vk::CommandBuffer& cb, AppState& app_state)
 	ImGui::Text("total time: %.4f s", app_state.total_time);
 	ImGui::Text("RENDERING_ALL: %.4f ms", app_state.device_timings[DeviceTimer::RENDERING_ALL]);
 	ImGui::Text("ANTS_STEP: %.4f ms", app_state.device_timings[DeviceTimer::ANTS_STEP]);
+	ImGui::Text("HASH_GRID_STEP: %.4f ms", app_state.device_timings[DeviceTimer::HASH_GRID_STEP]);
 	ImGui::End();
 	ImGui::EndFrame();
 
