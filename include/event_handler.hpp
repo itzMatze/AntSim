@@ -61,6 +61,7 @@ class EventHandler
 {
 public:
   glm::vec2 mouse_motion;
+  glm::vec2 mouse_wheel_motion;
 
 	EventHandler();
 	void dispatch_event(SDL_Event e);

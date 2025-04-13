@@ -18,6 +18,10 @@ void EventHandler::dispatch_event(SDL_Event e)
 			mouse_motion.x = e.motion.xrel;
 			mouse_motion.y = e.motion.yrel;
 			break;
+		case SDL_EVENT_MOUSE_WHEEL:
+			mouse_wheel_motion.x = e.wheel.x;
+			mouse_wheel_motion.y = e.wheel.y;
+			break;
 	}
 	switch (e.button.button)
 	{

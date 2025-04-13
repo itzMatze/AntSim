@@ -51,6 +51,17 @@ void dispatch_pressed_keys(EventHandler& event_handler, AppState& app_state, Win
 		SDL_WarpMouseInWindow(window.get(), app_state.get_window_extent().width / 2.0f, app_state.get_window_extent().height / 2.0f);
 		event_handler.set_released_key(Key::MouseLeft, false);
 	}
+	if (std::abs(event_handler.mouse_wheel_motion.y) > 0.001f)
+	{
+		const glm::vec2 center = (app_state.visible_range_min + app_state.visible_range_max) / glm::vec2(2.0f, 2.0f);
+		// the length of the displayed range is always the same for both axis
+		glm::vec2 centered_range = glm::vec2(app_state.visible_range_min.x, app_state.visible_range_max.x) - glm::vec2(center.x);
+		if (event_handler.mouse_wheel_motion.y < 0.0f) centered_range *= 1.2;
+		else centered_range /= 1.2;
+		app_state.visible_range_min = glm::vec2(centered_range.x) + center;
+		app_state.visible_range_max = glm::vec2(centered_range.y) + center;
+		event_handler.mouse_wheel_motion.y = 0.0f;
+	}
 }
 
 int run_application(glm::ivec2 window_resolution)
