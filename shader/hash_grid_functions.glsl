@@ -31,10 +31,15 @@ uint hash_index(ivec2 index)
 	return hash_jenkins32(uint(index.x ^ 0xcf5ae914)) ^ hash_jenkins32(uint(index.y));
 }
 
-int try_acquire_hash_grid_cell_index(ivec2 index)
+uint get_hash_grid_slot(ivec2 index)
 {
 	const uint hash = hash_index(index);
-	const int slot = int(hash % HASH_GRID_CAPACITY);
+	return hash % HASH_GRID_CAPACITY;
+}
+
+int try_acquire_hash_grid_cell_index(ivec2 index)
+{
+	const int slot = int(get_hash_grid_slot(index));
 	for (int bucket_offset = 0; bucket_offset < 1 && slot < HASH_GRID_CAPACITY; bucket_offset++)
 	{
 		const int hash_grid_index = slot + bucket_offset;
@@ -55,8 +60,7 @@ int try_acquire_hash_grid_cell_index(ivec2 index)
 
 int try_acquire_hash_grid_cell_index_const(ivec2 index)
 {
-	const uint hash = hash_index(index);
-	const int slot = int(hash % HASH_GRID_CAPACITY);
+	const int slot = int(get_hash_grid_slot(index));
 	for (int bucket_offset = 0; bucket_offset < 1 && slot < HASH_GRID_CAPACITY; bucket_offset++)
 	{
 		const int hash_grid_index = slot + bucket_offset;

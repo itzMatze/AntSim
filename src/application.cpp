@@ -1,6 +1,7 @@
 #include "application.hpp"
 
 #include "SDL3/SDL_events.h"
+#include "glm/common.hpp"
 #include "event_handler.hpp"
 #include "work_context.hpp"
 #include "util/timer.hpp"
@@ -50,6 +51,21 @@ void dispatch_pressed_keys(EventHandler& event_handler, AppState& app_state, Win
 		SDL_SetWindowRelativeMouseMode(window.get(), false);
 		SDL_WarpMouseInWindow(window.get(), app_state.get_window_extent().width / 2.0f, app_state.get_window_extent().height / 2.0f);
 		event_handler.set_released_key(Key::MouseLeft, false);
+	}
+	if (event_handler.is_key_pressed(Key::MouseRight))
+	{
+		glm::vec2 mouse_pos;
+		SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
+		const glm::vec2 window_dimensions(app_state.get_window_extent().width, app_state.get_window_extent().height);
+		mouse_pos = glm::clamp(mouse_pos, glm::vec2(0.0, 0.0), window_dimensions);
+		mouse_pos /= window_dimensions;
+		mouse_pos = mouse_pos * (app_state.visible_range_max - app_state.visible_range_min) + app_state.visible_range_min;
+		app_state.add_food_pos = mouse_pos;
+		app_state.add_food_amount = 255;
+	}
+	if (event_handler.is_key_released(Key::MouseRight))
+	{
+		app_state.add_food_amount = 0;
 	}
 	if (std::abs(event_handler.mouse_wheel_motion.y) > 0.001f)
 	{

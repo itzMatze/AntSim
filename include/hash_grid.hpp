@@ -6,16 +6,17 @@
 #include "vk/descriptor_set_handler.hpp"
 #include "vk/pipeline.hpp"
 #include "vk/storage.hpp"
+#include <limits>
 
 struct HashGridCellData
 {
 	glm::ivec2 index;
-	uint active_flags;
-	uint food_amount;
-	float distance_to_nest;
-	float distance_to_nest_age;
-	float distance_to_food;
-	float distance_to_food_age;
+	uint active_flags = 0u;
+	uint food_amount = 0u;
+	float distance_to_nest = std::numeric_limits<float>::max();
+	float distance_to_nest_age = 0.0f;
+	float distance_to_food = std::numeric_limits<float>::max();
+	float distance_to_food_age = 0.0f;
 };
 
 namespace ve
@@ -59,9 +60,8 @@ private:
 
 	struct StepPushConstants
 	{
-		uint32_t frame_idx;
-		float frame_time;
-		float total_time;
+		glm::vec2 food_pos;
+		uint32_t food_amount;
 	} spc;
 
 	struct RenderPushConstants

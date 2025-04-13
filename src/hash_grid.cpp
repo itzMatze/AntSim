@@ -43,9 +43,8 @@ void HashGrid::clear(vk::CommandBuffer& cb, AppState& app_state)
 
 void HashGrid::compute(vk::CommandBuffer& cb, AppState& app_state)
 {
-	spc.frame_idx = app_state.total_frames;
-	spc.frame_time = app_state.frame_time;
-	spc.total_time = app_state.total_time;
+	spc.food_pos = app_state.add_food_pos;
+	spc.food_amount = app_state.add_food_amount;
 	cb.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get());
 	cb.bindDescriptorSets(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[STEP_PIPELINE]->dsh.get_sets()[0], {});
 	cb.pushConstants(pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), vk::ShaderStageFlagBits::eCompute, 0, sizeof(StepPushConstants), &spc);

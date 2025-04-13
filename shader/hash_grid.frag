@@ -30,8 +30,9 @@ void main()
 	int hash_grid_index = try_acquire_hash_grid_cell_index_const(hash_grid_pos);
 	if (hash_grid_index >= 0)
 	{
-		float distance_to_nest = hash_grid[hash_grid_index].distance_to_nest;
-		out_color = vec4(viridis(distance_to_nest / 10.0), 1.0);
+		HashGridCell cell = hash_grid[hash_grid_index];
+		if (cell.food_amount > 0) out_color = vec4(inferno(float(cell.food_amount) / 255.0), 1.0);
+		else out_color = vec4(viridis(cell.distance_to_nest / 10.0), 1.0);
 	}
 	else
 	{

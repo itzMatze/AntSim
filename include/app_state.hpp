@@ -10,6 +10,8 @@ public:
 		for (int i = 0; i < device_timings.size(); i++) device_timings[i] = 0.0f;
 	}
 
+	glm::vec2 add_food_pos;
+	uint32_t add_food_amount = 0;
 	glm::vec2 visible_range_min = glm::vec2(-5.0, -5.0);
 	glm::vec2 visible_range_max = glm::vec2(5.0, 5.0);
 	const uint32_t ant_count = 1'00;

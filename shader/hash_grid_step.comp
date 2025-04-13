@@ -11,10 +11,23 @@ layout(binding = 0) buffer HashGridBuffer {
 
 #include "hash_grid_functions.glsl"
 
+struct PushConstants
+{
+	vec2 food_pos;
+	uint food_amount;
+};
+
+layout(push_constant) uniform PushConstant { PushConstants pc; };
+
 layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 
 void main()
 {
 	if (!is_valid_hash_grid(gl_GlobalInvocationID.x)) return;
-  hash_grid[gl_GlobalInvocationID.x].active_flags &= ~HASH_GRID_LOCKED;
+	if (gl_GlobalInvocationID.x == 0 && pc.food_amount > 0)
+	{
+		const int slot = try_acquire_hash_grid_cell_index(get_hash_grid_pos(pc.food_pos));
+		if (slot >= 0) hash_grid[slot].food_amount = pc.food_amount;
+	}
+	atomicAnd(hash_grid[gl_GlobalInvocationID.x].active_flags, ~HASH_GRID_LOCKED);
 }
