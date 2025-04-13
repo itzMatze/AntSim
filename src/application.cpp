@@ -4,6 +4,8 @@
 #include "event_handler.hpp"
 #include "work_context.hpp"
 #include "util/timer.hpp"
+#include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_video.h>
 
 struct GPUContext
 {
@@ -25,12 +27,29 @@ struct GPUContext
 	ve::WorkContext wc;
 };
 
-void dispatch_pressed_keys(EventHandler& event_handler, AppState& app_state)
+void dispatch_pressed_keys(EventHandler& event_handler, AppState& app_state, Window& window)
 {
 	if (event_handler.is_key_released(Key::G))
 	{
 		app_state.show_ui = !app_state.show_ui;
 		event_handler.set_released_key(Key::G, false);
+	}
+	if (event_handler.is_key_pressed(Key::MouseLeft))
+	{
+		if (!SDL_GetWindowRelativeMouseMode(window.get()))
+		{
+			event_handler.mouse_motion = glm::vec2(0.0f);
+			SDL_SetWindowRelativeMouseMode(window.get(), true);
+		}
+		app_state.visible_range_min -= event_handler.mouse_motion * 0.1f;
+		app_state.visible_range_max -= event_handler.mouse_motion * 0.1f;
+		event_handler.mouse_motion = glm::vec2(0.0f);
+	}
+	if (event_handler.is_key_released(Key::MouseLeft))
+	{
+		SDL_SetWindowRelativeMouseMode(window.get(), false);
+		SDL_WarpMouseInWindow(window.get(), app_state.get_window_extent().width / 2.0f, app_state.get_window_extent().height / 2.0f);
+		event_handler.set_released_key(Key::MouseLeft, false);
 	}
 }
 
@@ -46,7 +65,7 @@ int run_application(glm::ivec2 window_resolution)
 	SDL_Event e;
 	while (!quit)
 	{
-		dispatch_pressed_keys(event_handler, app_state);
+		dispatch_pressed_keys(event_handler, app_state, *gpu_context.vmc.window);
 		try
 		{
 			gpu_context.wc.draw_frame(app_state);
