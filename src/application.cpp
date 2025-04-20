@@ -37,23 +37,28 @@ void dispatch_pressed_keys(EventHandler& event_handler, AppState& app_state, Win
 	}
 	if (event_handler.is_key_pressed(Key::MouseLeft))
 	{
+		// panning
 		if (!SDL_GetWindowRelativeMouseMode(window.get()))
 		{
 			event_handler.mouse_motion = glm::vec2(0.0f);
 			SDL_SetWindowRelativeMouseMode(window.get(), true);
 		}
-		app_state.visible_range_min -= event_handler.mouse_motion * 0.1f;
-		app_state.visible_range_max -= event_handler.mouse_motion * 0.1f;
+		// scale panning speed with zoom level
+		const glm::vec2 visible_range_extent = app_state.visible_range_max - app_state.visible_range_min;
+		app_state.visible_range_min -= event_handler.mouse_motion * visible_range_extent * 0.01f;
+		app_state.visible_range_max -= event_handler.mouse_motion * visible_range_extent * 0.01f;
 		event_handler.mouse_motion = glm::vec2(0.0f);
 	}
 	if (event_handler.is_key_released(Key::MouseLeft))
 	{
+		// panning released
 		SDL_SetWindowRelativeMouseMode(window.get(), false);
 		SDL_WarpMouseInWindow(window.get(), app_state.get_window_extent().width / 2.0f, app_state.get_window_extent().height / 2.0f);
 		event_handler.set_released_key(Key::MouseLeft, false);
 	}
 	if (event_handler.is_key_pressed(Key::MouseRight))
 	{
+		// add food
 		glm::vec2 mouse_pos;
 		SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
 		const glm::vec2 window_dimensions(app_state.get_window_extent().width, app_state.get_window_extent().height);
@@ -69,6 +74,7 @@ void dispatch_pressed_keys(EventHandler& event_handler, AppState& app_state, Win
 	}
 	if (std::abs(event_handler.mouse_wheel_motion.y) > 0.001f)
 	{
+		// zoom
 		const glm::vec2 center = (app_state.visible_range_min + app_state.visible_range_max) / glm::vec2(2.0f, 2.0f);
 		// the length of the displayed range is always the same for both axis
 		glm::vec2 centered_range = glm::vec2(app_state.visible_range_min.x, app_state.visible_range_max.x) - glm::vec2(center.x);
