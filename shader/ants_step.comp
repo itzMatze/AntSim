@@ -50,6 +50,7 @@ void main()
 		else
 		{
 			cell.distance_to_nest = ant.distance_to_poi;
+			cell.distance_to_nest_age = 10.0;
 			cell.active_flags |= HASH_GRID_DIST_TO_NEST_ACTIVE;
 		}
 		hash_grid[hash_grid_index] = cell;

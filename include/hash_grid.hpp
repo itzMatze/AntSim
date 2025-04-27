@@ -62,6 +62,9 @@ private:
 	{
 		glm::vec2 food_pos;
 		uint32_t food_amount;
+		uint32_t frame_idx;
+		float frame_time;
+		float total_time;
 	} spc;
 
 	struct RenderPushConstants

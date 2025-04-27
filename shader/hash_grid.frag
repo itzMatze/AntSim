@@ -32,7 +32,11 @@ void main()
 	{
 		HashGridCell cell = hash_grid[hash_grid_index];
 		if (cell.food_amount > 0) out_color = vec4(inferno(float(cell.food_amount) / 255.0), 1.0);
-		else out_color = vec4(viridis(cell.distance_to_nest / 10.0), 1.0);
+		else if ((cell.active_flags & HASH_GRID_ACTIVE) != 0u)
+		{
+			out_color = vec4(viridis(cell.distance_to_nest / 10.0), 1.0);
+		}
+		else out_color = vec4(0.0, 0.0, 0.0, 1.0);
 	}
 	else
 	{
