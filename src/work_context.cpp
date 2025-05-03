@@ -2,6 +2,8 @@
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_structs.hpp>
 
+constexpr uint32_t frames_in_flight = 2;
+
 namespace ve
 {
 WorkContext::WorkContext(const VulkanMainContext& vmc, VulkanCommandContext& vcc)

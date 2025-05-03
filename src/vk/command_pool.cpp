@@ -1,8 +1,5 @@
 #include "vk/command_pool.hpp"
 
-#include "vk/common.hpp"
-#include "vk/ve_log.hpp"
-
 namespace ve
 {
 CommandPool::CommandPool(const vk::Device& logical_device, uint32_t queue_family_idx) : device(logical_device)

@@ -2,7 +2,6 @@
 
 #include "vk/ve_log.hpp"
 #include "vk/render_pass.hpp"
-#include "vk/common.hpp"
 
 namespace ve
 {

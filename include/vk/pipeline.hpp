@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vk/common.hpp"
+#include <vulkan/vulkan.hpp>
 #include "vk/render_pass.hpp"
 #include "vk/vulkan_main_context.hpp"
 #include "vk/shader.hpp"

@@ -11,7 +11,6 @@ set(SOURCE_FILES
 	src/event_handler.cpp
 	src/hash_grid.cpp
 	src/ui.cpp
-	src/window.cpp
 	src/work_context.cpp
 	src/util/random_generator.cpp
 	src/vk/command_pool.cpp
@@ -31,6 +30,7 @@ set(SOURCE_FILES
 	src/vk/synchronization.cpp
 	src/vk/vulkan_command_context.cpp
 	src/vk/vulkan_main_context.cpp
+	src/vk/window.cpp
 	"${PROJECT_SOURCE_DIR}/dependencies/imgui/imgui.cpp"
 	"${PROJECT_SOURCE_DIR}/dependencies/imgui/backends/imgui_impl_sdl3.cpp"
 	"${PROJECT_SOURCE_DIR}/dependencies/imgui/backends/imgui_impl_vulkan.cpp"

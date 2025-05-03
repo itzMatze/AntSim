@@ -1,7 +1,6 @@
 #include "vk/extensions_handler.hpp"
 
-#include "vk/common.hpp"
-#include "vk/ve_log.hpp"
+#include <cstring>
 
 namespace ve
 {
