@@ -16,6 +16,10 @@ layout(binding = 1) buffer HashGridBuffer {
 	HashGridCell hash_grid[];
 };
 
+layout(binding = 2) readonly buffer NestBuffer {
+	Nest nest;
+};
+
 #include "ants_functions.glsl"
 #include "hash_grid_functions.glsl"
 
@@ -24,6 +28,7 @@ struct PushConstants
 	uint frame_idx;
 	float frame_time;
 	float total_time;
+	float pheromone_lifetime;
 };
 
 layout(push_constant) uniform PushConstant { PushConstants pc; };
@@ -43,15 +48,24 @@ void main()
 	if (hash_grid_index >= 0)
 	{
 		HashGridCell cell = hash_grid[hash_grid_index];
-		if ((cell.active_flags & HASH_GRID_DIST_TO_NEST_ACTIVE) != 0 && cell.distance_to_nest < ant.distance_to_poi - 2.0 * HASH_GRID_CELL_LENGTH)
+		if (distance(ant.pos, nest.pos) < nest.radius)
 		{
-			ant.distance_to_poi = hash_grid[hash_grid_index].distance_to_nest;
+			cell.distance_to_nest = 0.0;
+			cell.distance_to_nest_age = pc.pheromone_lifetime;
+			ant.distance_to_poi = 0.0;
 		}
 		else
 		{
-			cell.distance_to_nest = ant.distance_to_poi;
-			cell.distance_to_nest_age = 10.0;
-			cell.active_flags |= HASH_GRID_DIST_TO_NEST_ACTIVE;
+			if ((cell.active_flags & HASH_GRID_DIST_TO_NEST_ACTIVE) != 0 && cell.distance_to_nest < ant.distance_to_poi - 2.0 * HASH_GRID_CELL_LENGTH)
+			{
+				ant.distance_to_poi = hash_grid[hash_grid_index].distance_to_nest;
+			}
+			else
+			{
+				cell.distance_to_nest = ant.distance_to_poi;
+				cell.distance_to_nest_age = pc.pheromone_lifetime;
+				cell.active_flags |= HASH_GRID_DIST_TO_NEST_ACTIVE;
+			}
 		}
 		hash_grid[hash_grid_index] = cell;
 	}

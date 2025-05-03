@@ -15,6 +15,12 @@ struct AntData
 	uint32_t state_bits;
 };
 
+struct NestData
+{
+	glm::vec2 pos;
+	float radius;
+};
+
 namespace ve
 {
 class Ants
@@ -32,6 +38,7 @@ private:
 	enum Buffers
 	{
 		ANTS_BUFFER = 0,
+		NEST_BUFFER = 1,
 		BUFFER_COUNT
 	};
 
@@ -61,6 +68,7 @@ private:
 		uint32_t frame_idx;
 		float frame_time;
 		float total_time;
+		float pheromone_lifetime = 10.0f;
 	} spc;
 
 	struct RenderPushConstants

@@ -115,9 +115,11 @@ void HashGrid::create_descriptor_set()
 	pipeline_data[STEP_PIPELINE]->dsh.add_binding(0, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
 	pipeline_data[CLEAR_PIPELINE]->dsh.add_binding(0, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
 	pipeline_data[RENDER_PIPELINE]->dsh.add_binding(0, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment);
+	pipeline_data[RENDER_PIPELINE]->dsh.add_binding(1, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment);
 	pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(0, 0, storage.get_buffer(buffers[HASH_GRID_BUFFER]));
 	pipeline_data[CLEAR_PIPELINE]->dsh.add_descriptor(0, 0, storage.get_buffer(buffers[HASH_GRID_BUFFER]));
 	pipeline_data[RENDER_PIPELINE]->dsh.add_descriptor(0, 0, storage.get_buffer(buffers[HASH_GRID_BUFFER]));
+	pipeline_data[RENDER_PIPELINE]->dsh.add_descriptor(0, 1, storage.get_buffer_by_name("nest_buffer"));
 	for (std::unique_ptr<PipelineData>& pipeline_datum : pipeline_data) pipeline_datum->dsh.construct();
 }
 } // namespace ve

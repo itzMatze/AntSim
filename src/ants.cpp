@@ -15,6 +15,8 @@ void Ants::setup_storage(AppState& app_state)
 {
 	std::vector<AntData> ants_data(app_state.ant_count);
 	buffers[ANTS_BUFFER] = storage.add_buffer("ants_buffer", ants_data, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, true, vmc.queue_family_indices.transfer, vmc.queue_family_indices.compute, vmc.queue_family_indices.graphics);
+	NestData nest{.pos = glm::vec2(0.0f, 0.0f), .radius = 0.1f};
+	buffers[NEST_BUFFER] = storage.add_buffer("nest_buffer", &nest, 1, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, true, vmc.queue_family_indices.transfer, vmc.queue_family_indices.compute, vmc.queue_family_indices.graphics);
 }
 
 void Ants::construct(const RenderPass& render_pass, AppState& app_state)
@@ -128,9 +130,11 @@ void Ants::create_descriptor_set()
 {
 	pipeline_data[STEP_PIPELINE]->dsh.add_binding(0, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
 	pipeline_data[STEP_PIPELINE]->dsh.add_binding(1, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
+	pipeline_data[STEP_PIPELINE]->dsh.add_binding(2, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
 	pipeline_data[CLEAR_PIPELINE]->dsh.add_binding(0, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
 	pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(0, 0, storage.get_buffer(buffers[ANTS_BUFFER]));
 	pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(0, 1, storage.get_buffer_by_name("hash_grid_buffer"));
+	pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(0, 2, storage.get_buffer(buffers[NEST_BUFFER]));
 	pipeline_data[CLEAR_PIPELINE]->dsh.add_descriptor(0, 0, storage.get_buffer(buffers[ANTS_BUFFER]));
 	for (std::unique_ptr<PipelineData>& pipeline_datum : pipeline_data) pipeline_datum->dsh.construct();
 }
