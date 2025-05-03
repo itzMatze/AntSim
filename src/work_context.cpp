@@ -81,7 +81,7 @@ void WorkContext::render(uint32_t image_idx, AppState& app_state)
 	ants.compute(compute_cb, app_state);
 	device_timers[app_state.current_frame].stop(compute_cb, DeviceTimer::ANTS_STEP, vk::PipelineStageFlagBits::eComputeShader);
 	const Buffer& buffer = storage.get_buffer_by_name("hash_grid_buffer");
-	vk::BufferMemoryBarrier barrier(vk::AccessFlagBits::eMemoryWrite, vk::AccessFlagBits::eMemoryRead, vmc.queue_family_indices.compute, vmc.queue_family_indices.compute, buffer.get(), 0, buffer.get_byte_size());
+	vk::BufferMemoryBarrier barrier(vk::AccessFlagBits::eMemoryWrite, vk::AccessFlagBits::eMemoryRead, vmc.queue_families.get(QueueFamilyFlags::Compute), vmc.queue_families.get(QueueFamilyFlags::Compute), buffer.get(), 0, buffer.get_byte_size());
 	compute_cb.pipelineBarrier(vk::PipelineStageFlagBits::eComputeShader, vk::PipelineStageFlagBits::eComputeShader, vk::DependencyFlagBits::eDeviceGroup, {}, {barrier}, {});
 	device_timers[app_state.current_frame].start(compute_cb, DeviceTimer::HASH_GRID_STEP, vk::PipelineStageFlagBits::eComputeShader);
 	hash_grid.compute(compute_cb, app_state);

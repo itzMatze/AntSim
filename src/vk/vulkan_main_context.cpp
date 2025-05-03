@@ -10,22 +10,22 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 static VKAPI_ATTR vk::Bool32 VKAPI_CALL debug_callback(vk::DebugUtilsMessageSeverityFlagBitsEXT message_severity, vk::DebugUtilsMessageTypeFlagsEXT message_type, const vk::DebugUtilsMessengerCallbackDataEXT* callback_data, void* user_data)
 {
-  switch (message_severity)
-  {
-    case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
-      antlog::debug(callback_data->pMessage);
-      break;
-    case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
-      antlog::info(callback_data->pMessage);
-      break;
-    case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
-      antlog::warn(callback_data->pMessage);
-      break;
-    case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
-      antlog::error(callback_data->pMessage);
-      break;
-  }
-  return VK_FALSE;
+	switch (message_severity)
+	{
+		case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
+			antlog::debug(callback_data->pMessage);
+			break;
+		case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
+			antlog::info(callback_data->pMessage);
+			break;
+		case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
+			antlog::warn(callback_data->pMessage);
+			break;
+		case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
+			antlog::error(callback_data->pMessage);
+			break;
+	}
+	return VK_FALSE;
 }
 
 namespace ve
@@ -39,8 +39,8 @@ void VulkanMainContext::construct(const uint32_t width, const uint32_t height)
 	VULKAN_HPP_DEFAULT_DISPATCHER.init(instance.get());
 	surface = window->create_surface(instance.get());
 	physical_device.construct(instance, surface);
-	queue_family_indices = physical_device.get_queue_families(surface);
-	logical_device.construct(physical_device, queue_family_indices, queues);
+	queue_families.construct(physical_device.get(), surface);
+	logical_device.construct(physical_device, queue_families, queues);
 	VULKAN_HPP_DEFAULT_DISPATCHER.init(logical_device.get());
 	create_vma_allocator();
 	setup_debug_messenger();

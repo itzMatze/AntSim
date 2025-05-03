@@ -15,7 +15,7 @@ HashGrid::HashGrid(const VulkanMainContext& vmc, Storage& storage) : vmc(vmc), s
 void HashGrid::setup_storage(AppState& app_state)
 {
 	std::vector<HashGridCellData> hash_grid_data(app_state.hash_grid_capacity);
-	buffers[HASH_GRID_BUFFER] = storage.add_buffer("hash_grid_buffer", hash_grid_data, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferSrc, true, vmc.queue_family_indices.transfer, vmc.queue_family_indices.compute, vmc.queue_family_indices.graphics);
+	buffers[HASH_GRID_BUFFER] = storage.add_buffer("hash_grid_buffer", hash_grid_data, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferSrc, true, QueueFamilyFlags::Transfer | QueueFamilyFlags::Compute | QueueFamilyFlags::Graphics);
 }
 
 void HashGrid::construct(const RenderPass& render_pass, AppState& app_state)

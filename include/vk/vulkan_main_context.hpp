@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vulkan/vulkan.hpp>
+#include "vk/queue_families.hpp"
 #include "window.hpp"
 #include "vk/logical_device.hpp"
 #include "vk/physical_device.hpp"
@@ -36,7 +37,7 @@ public:
 	vk::DebugUtilsMessengerEXT debug_messenger;
 	vk::SurfaceKHR surface;
 	PhysicalDevice physical_device;
-	QueueFamilyIndices queue_family_indices;
+	QueueFamilies queue_families;
 	LogicalDevice logical_device;
 	VmaAllocator va;
 };
