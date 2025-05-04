@@ -1,5 +1,5 @@
 #include "ants.hpp"
-#include "vk/descriptor_set_handler.hpp"
+#include "vkte/descriptor_set_handler.hpp"
 #include <vulkan/vulkan_handles.hpp>
 
 Ants::Ants(const vkte::VulkanMainContext& vmc, vkte::Storage& storage) : vmc(vmc), storage(storage)

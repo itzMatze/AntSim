@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
-#include "vk/device_timer.hpp"
+#include <array>
+#include <vulkan/vulkan.hpp>
 #include "vec2.hpp"
 
 enum TimerNames {

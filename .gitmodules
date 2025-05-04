@@ -1,0 +1,3 @@
+[submodule "vkTurboEngine"]
+	path = dependencies/vkTurboEngine
+	url = https://github.com/itzMatze/vkTurboEngine

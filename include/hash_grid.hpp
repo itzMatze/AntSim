@@ -3,9 +3,9 @@
 #include "vec2.hpp"
 
 #include "app_state.hpp"
-#include "vk/descriptor_set_handler.hpp"
-#include "vk/pipeline.hpp"
-#include "vk/storage.hpp"
+#include "vkte/descriptor_set_handler.hpp"
+#include "vkte/pipeline.hpp"
+#include "vkte/storage.hpp"
 #include <limits>
 
 struct HashGridCellData

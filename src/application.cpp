@@ -2,7 +2,7 @@
 
 #include "SDL3/SDL_events.h"
 #include "glm/common.hpp"
-#include "window/event_handler.hpp"
+#include "vkte_window/event_handler.hpp"
 #include "work_context.hpp"
 #include "util/timer.hpp"
 #include <SDL3/SDL_mouse.h>
@@ -40,14 +40,17 @@ void dispatch_pressed_keys(EventHandler& event_handler, AppState& app_state, Win
 		// panning
 		if (!SDL_GetWindowRelativeMouseMode(window.get()))
 		{
-			event_handler.mouse_motion = glm::vec2(0.0f);
+			event_handler.mouse_motion_x = 0.0f;
+			event_handler.mouse_motion_y = 0.0f;
 			SDL_SetWindowRelativeMouseMode(window.get(), true);
 		}
+		glm::vec2 mouse_motion(event_handler.mouse_motion_x, event_handler.mouse_motion_y);
 		// scale panning speed with zoom level
 		const glm::vec2 visible_range_extent = app_state.visible_range_max - app_state.visible_range_min;
-		app_state.visible_range_min -= event_handler.mouse_motion * visible_range_extent * 0.01f;
-		app_state.visible_range_max -= event_handler.mouse_motion * visible_range_extent * 0.01f;
-		event_handler.mouse_motion = glm::vec2(0.0f);
+		app_state.visible_range_min -= mouse_motion * visible_range_extent * 0.01f;
+		app_state.visible_range_max -= mouse_motion * visible_range_extent * 0.01f;
+		event_handler.mouse_motion_x = 0.0f;
+		event_handler.mouse_motion_y = 0.0f;
 	}
 	if (event_handler.is_key_released(Key::MouseLeft))
 	{
@@ -72,17 +75,17 @@ void dispatch_pressed_keys(EventHandler& event_handler, AppState& app_state, Win
 	{
 		app_state.add_food_amount = 0;
 	}
-	if (std::abs(event_handler.mouse_wheel_motion.y) > 0.001f)
+	if (std::abs(event_handler.mouse_wheel_motion_y) > 0.001f)
 	{
 		// zoom
 		const glm::vec2 center = (app_state.visible_range_min + app_state.visible_range_max) / glm::vec2(2.0f, 2.0f);
 		// the length of the displayed range is always the same for both axis
 		glm::vec2 centered_range = glm::vec2(app_state.visible_range_min.x, app_state.visible_range_max.x) - glm::vec2(center.x);
-		if (event_handler.mouse_wheel_motion.y < 0.0f) centered_range *= 1.2;
+		if (event_handler.mouse_wheel_motion_y < 0.0f) centered_range *= 1.2;
 		else centered_range /= 1.2;
 		app_state.visible_range_min = glm::vec2(centered_range.x) + center;
 		app_state.visible_range_max = glm::vec2(centered_range.y) + center;
-		event_handler.mouse_wheel_motion.y = 0.0f;
+		event_handler.mouse_wheel_motion_y = 0.0f;
 	}
 }
 
@@ -98,7 +101,7 @@ int run_application(glm::ivec2 window_resolution)
 	SDL_Event e;
 	while (!quit)
 	{
-		dispatch_pressed_keys(event_handler, app_state, *gpu_context.vmc.window);
+		dispatch_pressed_keys(event_handler, app_state, gpu_context.vmc.window);
 		try
 		{
 			gpu_context.wc.draw_frame(app_state);

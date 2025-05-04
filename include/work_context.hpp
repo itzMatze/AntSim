@@ -5,14 +5,14 @@
 #include "ants.hpp"
 #include "app_state.hpp"
 #include "hash_grid.hpp"
-#include "window/ui.hpp"
 #include "util/timer.hpp"
-#include "vk/device_timer.hpp"
-#include "vk/storage.hpp"
-#include "vk/swapchain.hpp"
-#include "vk/vulkan_command_context.hpp"
-#include "vk/vulkan_main_context.hpp"
-#include "vk/synchronization.hpp"
+#include "vkte_window/ui.hpp"
+#include "vkte/device_timer.hpp"
+#include "vkte/storage.hpp"
+#include "vkte/swapchain.hpp"
+#include "vkte/vulkan_command_context.hpp"
+#include "vkte/vulkan_main_context.hpp"
+#include "vkte/synchronization.hpp"
 
 enum SemaphoreNames
 {
