@@ -1,22 +1,22 @@
 #include "vk/synchronization.hpp"
 
-#include "vk/ve_log.hpp"
+#include "vk/vkte_log.hpp"
 
-namespace ve
+namespace vkte
 {
 Synchronization::Synchronization(const vk::Device& logical_device) : device(logical_device)
 {}
 
-void Synchronization::construct()
+void Synchronization::construct(uint32_t semaphore_count, uint32_t fence_count)
 {
-	for (uint32_t i = 0; i < SEMAPHORE_COUNT; ++i)
+	for (uint32_t i = 0; i < semaphore_count; ++i)
 	{
 		vk::SemaphoreCreateInfo sci{};
 		sci.sType = vk::StructureType::eSemaphoreCreateInfo;
 		semaphores.push_back(device.createSemaphore(sci));
 	}
 	// all fences are created as signaled, if an unsignaled fence is needed use reset_fence
-	for (uint32_t i = 0; i < FENCE_COUNT; ++i)
+	for (uint32_t i = 0; i < fence_count; ++i)
 	{
 		vk::FenceCreateInfo fci{};
 		fci.sType = vk::StructureType::eFenceCreateInfo;
@@ -34,28 +34,28 @@ void Synchronization::destruct()
 	fences.clear();
 }
 
-const vk::Semaphore& Synchronization::get_semaphore(SemaphoreNames name) const
+const vk::Semaphore& Synchronization::get_semaphore(uint32_t semaphore_index) const
 {
-	return semaphores[name];
+	return semaphores[semaphore_index];
 }
 
-const vk::Fence& Synchronization::get_fence(FenceNames name) const
+const vk::Fence& Synchronization::get_fence(uint32_t fence_index) const
 {
-	return fences[name];
+	return fences[fence_index];
 }
 
-void Synchronization::wait_for_fence(FenceNames name) const
+void Synchronization::wait_for_fence(uint32_t fence_index) const
 {
-	VE_CHECK(device.waitForFences(fences[name], 1, uint64_t(-1)), "Failed to wait for fence!");
+	VKTE_CHECK(device.waitForFences(fences[fence_index], 1, uint64_t(-1)), "Failed to wait for fence!");
 }
 
-bool Synchronization::is_fence_finished(FenceNames name) const
+bool Synchronization::is_fence_finished(uint32_t fence_index) const
 {
-	return (device.getFenceStatus(fences[name]) == vk::Result::eSuccess);
+	return (device.getFenceStatus(fences[fence_index]) == vk::Result::eSuccess);
 }
 
-void Synchronization::reset_fence(FenceNames name) const
+void Synchronization::reset_fence(uint32_t fence_index) const
 {
-	device.resetFences(fences[name]);
+	device.resetFences(fences[fence_index]);
 }
-} // namespace ve
+} // namespace vkte

@@ -1,13 +1,17 @@
 #include "vk/device_timer.hpp"
 
-namespace ve
+namespace vkte
 {
-DeviceTimer::DeviceTimer(const VulkanMainContext& vmc) : vmc(vmc), result_fetched(TIMER_COUNT, true)
+DeviceTimer::DeviceTimer(const VulkanMainContext& vmc) : vmc(vmc)
+{}
+
+void DeviceTimer::construct(uint32_t timer_count)
 {
+	result_fetched.resize(timer_count, true);
 	vk::QueryPoolCreateInfo qpci{};
 	qpci.sType = vk::StructureType::eQueryPoolCreateInfo;
 	qpci.queryType = vk::QueryType::eTimestamp;
-	qpci.queryCount = TIMER_COUNT * 2;
+	qpci.queryCount = timer_count * 2;
 	qp = vmc.logical_device.get().createQueryPool(qpci);
 	vk::PhysicalDeviceProperties pdp = vmc.physical_device.get().getProperties();
 	timestamp_period = pdp.limits.timestampPeriod;
@@ -18,35 +22,24 @@ void DeviceTimer::destruct()
 	vmc.logical_device.get().destroyQueryPool(qp);
 }
 
-void DeviceTimer::reset(vk::CommandBuffer& cb, const std::vector<TimerNames>& timers)
+void DeviceTimer::reset(vk::CommandBuffer& cb, uint32_t timer_index)
 {
-	// bundle all contiguous timer resets into one resetQueryPool call
-	std::vector<TimerNames> sorted_timers(timers);
-	std::sort(sorted_timers.begin(), sorted_timers.end());
-	std::pair<uint32_t, uint32_t> range(0, 0);
-	for (const auto& t : timers)
-	{
-		if (range.first + range.second / 2 == t)
-		{
-			range.second += 2;
-		}
-		else
-		{
-			if (range.second > 0) cb.resetQueryPool(qp, range.first, range.second);
-			range = std::make_pair(t * 2, 2);
-		}
-	}
-	cb.resetQueryPool(qp, range.first, range.second);
+	cb.resetQueryPool(qp, timer_index * 2, 2);
 }
 
-void DeviceTimer::start(vk::CommandBuffer& cb, TimerNames t, vk::PipelineStageFlagBits stage)
+void DeviceTimer::reset_all(vk::CommandBuffer& cb)
 {
-	cb.writeTimestamp(stage, qp, t * 2);
+	cb.resetQueryPool(qp, 0, result_fetched.size());
 }
 
-void DeviceTimer::stop(vk::CommandBuffer& cb, TimerNames t, vk::PipelineStageFlagBits stage)
+void DeviceTimer::start(vk::CommandBuffer& cb, uint32_t timer_index, vk::PipelineStageFlagBits stage)
 {
-	cb.writeTimestamp(stage, qp, t * 2 + 1);
-	result_fetched[t] = false;
+	cb.writeTimestamp(stage, qp, timer_index * 2);
 }
-} // namespace ve
+
+void DeviceTimer::stop(vk::CommandBuffer& cb, uint32_t timer_index, vk::PipelineStageFlagBits stage)
+{
+	cb.writeTimestamp(stage, qp, timer_index * 2 + 1);
+	result_fetched[timer_index] = false;
+}
+} // namespace vkte

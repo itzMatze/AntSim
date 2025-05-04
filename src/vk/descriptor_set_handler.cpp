@@ -1,6 +1,6 @@
 #include "vk/descriptor_set_handler.hpp"
 
-namespace ve
+namespace vkte
 {
 DescriptorSetHandler::DescriptorSetHandler(const VulkanMainContext& vmc, uint32_t set_count) : vmc(vmc), set_count(set_count)
 {}
@@ -138,4 +138,4 @@ const std::vector<vk::DescriptorSet>& DescriptorSetHandler::get_sets() const
 {
 	return sets;
 }
-} // namespace ve
+} // namespace vkte

@@ -1,8 +1,8 @@
 #include "vk/storage.hpp"
 
-#include "vk/ve_log.hpp"
+#include "vk/vkte_log.hpp"
 
-namespace ve
+namespace vkte
 {
 Storage::Storage(const VulkanMainContext& vmc, VulkanCommandContext& vcc) : vmc(vmc), vcc(vcc)
 {}
@@ -43,13 +43,13 @@ void Storage::destroy_buffer(uint32_t idx)
 	if (buffers.at(idx).buffer.has_value())
 	{
 		VmaAllocationInfo alloc_info = buffers.at(idx).buffer.value().get_allocation_info();
-		antlog::debug("Destroying buffer \"{}\", Size: {}, Type: {}", buffers.at(idx).name, alloc_info.size, alloc_info.memoryType);
+		VKTE_DEBUG("vkte: Destroying buffer \"{}\", Size: {}, Type: {}", buffers.at(idx).name, alloc_info.size, alloc_info.memoryType);
 		buffers.at(idx).buffer.value().destruct();
 		buffers.at(idx).buffer.reset();
 	}
 	else
 	{
-		antlog::error("Trying to destroy already destroyed buffer!");
+		VKTE_ERROR("vkte: Trying to destroy already destroyed buffer!");
 	}
 }
 
@@ -58,13 +58,13 @@ void Storage::destroy_image(uint32_t idx)
 	if (images.at(idx).image.has_value())
 	{
 		VmaAllocationInfo alloc_info = images.at(idx).image.value().get_allocation_info();
-		antlog::debug("Destroying image \"{}\", Size: {}, Type: {}", images.at(idx).name, alloc_info.size, alloc_info.memoryType);
+		VKTE_DEBUG("vkte: Destroying image \"{}\", Size: {}, Type: {}", images.at(idx).name, alloc_info.size, alloc_info.memoryType);
 		images.at(idx).image.value().destruct();
 		images.at(idx).image.reset();
 	}
 	else
 	{
-		antlog::error("Trying to destroy already destroyed image!");
+		VKTE_ERROR("vkte: Trying to destroy already destroyed image!");
 	}
 }
 
@@ -84,7 +84,7 @@ void Storage::clear()
 	{
 		if (buffers[buffer.second].buffer.has_value())
 		{
-			antlog::warn("Buffer \"{}\" not destroyed! Cleaning up...", buffer.first);
+			VKTE_WARN("vkte: Buffer \"{}\" not destroyed! Cleaning up...", buffer.first);
 			buffers[buffer.second].buffer.value().destruct();
 		}
 	}
@@ -94,7 +94,7 @@ void Storage::clear()
 	{
 		if (images[image.second].image.has_value())
 		{
-			antlog::warn("Image \"{}\" not destroyed! Cleaning up...", image.first);
+			VKTE_WARN("vkte: Image \"{}\" not destroyed! Cleaning up...", image.first);
 			images[image.second].image.value().destruct();
 		}
 	}
@@ -104,25 +104,25 @@ void Storage::clear()
 
 Buffer& Storage::get_buffer(uint32_t idx)
 {
-	if (!buffers.at(idx).buffer.has_value()) VE_THROW("Trying to get already destroyed buffer!");
+	if (!buffers.at(idx).buffer.has_value()) VKTE_THROW("Trying to get already destroyed buffer!");
 	return buffers.at(idx).buffer.value();
 }
 
 Image& Storage::get_image(uint32_t idx)
 {
-	if (!images.at(idx).image.has_value()) VE_THROW("Trying to get already destroyed image!");
+	if (!images.at(idx).image.has_value()) VKTE_THROW("Trying to get already destroyed image!");
 	return images.at(idx).image.value();
 }
 
 Buffer& Storage::get_buffer_by_name(const std::string& name)
 {
-	if (!buffer_names.contains(name)) VE_THROW("Failed to find buffer with name: " + name);
+	if (!buffer_names.contains(name)) VKTE_THROW("Failed to find buffer with name: " + name);
 	return get_buffer(buffer_names.at(name));
 }
 
 Image& Storage::get_image_by_name(const std::string& name)
 {
-	if (!image_names.contains(name)) VE_THROW("Failed to find image with name: " + name);
+	if (!image_names.contains(name)) VKTE_THROW("Failed to find image with name: " + name);
 	return get_image(image_names.at(name));
 }
-} // namespace ve
+} // namespace vkte

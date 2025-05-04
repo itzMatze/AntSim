@@ -3,6 +3,13 @@
 #include "vk/device_timer.hpp"
 #include "vec2.hpp"
 
+enum TimerNames {
+	TIMER_RENDERING_ALL = 0,
+	TIMER_ANTS_STEP = 1,
+	TIMER_HASH_GRID_STEP = 2,
+	TIMER_COUNT
+};
+
 struct AppState {
 public:
 	AppState() : current_frame(0), total_frames(0), total_time(1.0f/60.0f), vsync(true), show_ui(true)
@@ -18,8 +25,9 @@ public:
 	const uint32_t hash_grid_capacity = 100'000;
 	uint32_t current_frame = 0;
 	uint32_t total_frames = 0;
-	std::array<float, ve::DeviceTimer::TIMER_COUNT> device_timings;
+	std::array<float, TIMER_COUNT> device_timings;
 	float frame_time = 1.0 / 60.0;
+	float frame_time_ema = 1.0 / 60.0;
 	float total_time = 1.0 / 60.0;
 	bool vsync = true;
 	bool show_ui = true;
@@ -42,4 +50,3 @@ private:
 	float aspect_ratio = float(render_extent.width) / float(render_extent.height);
 	vk::Extent2D window_extent = vk::Extent2D(aspect_ratio * 1000, 1000);
 };
-

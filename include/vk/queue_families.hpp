@@ -16,7 +16,7 @@ enum class QueueFamilyFlags : uint32_t
 using Queues = NamedBitfield<QueueFamilyFlags>;
 ENABLE_ENUM_OPERATORS(QueueFamilyFlags);
 
-namespace ve
+namespace vkte
 {
 class QueueFamilies {
 public:
@@ -42,4 +42,4 @@ private:
 	Queues transfer = QueueFamilyFlags::Transfer;
 	Queues present = QueueFamilyFlags::Present;
 };
-} // namespace ve
+} // namespace vkte

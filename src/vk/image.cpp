@@ -3,7 +3,7 @@
 #include <cmath>
 #include "vk/buffer.hpp"
 
-namespace ve
+namespace vkte
 {
 Image::Image(const VulkanMainContext& vmc, VulkanCommandContext& vcc, const unsigned char* data, uint32_t width, uint32_t height, bool use_mip_maps, uint32_t base_mip_map_lvl, Queues queues, vk::ImageUsageFlags usage_flags) : vmc(vmc), w(width), h(height), c(4), byte_size(width * height * 4), mip_levels(use_mip_maps ? std::floor(std::log2(std::max(w, h))) + 1 : 1), layer_count(1)
 {
@@ -346,4 +346,4 @@ void Image::generate_mipmaps(VulkanCommandContext& vcc)
 
 	vcc.submit_graphics(cb, true);
 }
-} // namespace ve
+} // namespace vkte

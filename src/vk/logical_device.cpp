@@ -1,9 +1,8 @@
 #include "vk/logical_device.hpp"
 
-#include "vk/ve_log.hpp"
 #include "vk/physical_device.hpp"
 
-namespace ve
+namespace vkte
 {
 void LogicalDevice::construct(const PhysicalDevice& p_device, const QueueFamilies& queue_families, std::unordered_map<QueueIndex, vk::Queue>& queues)
 {
@@ -70,4 +69,4 @@ const vk::Device& LogicalDevice::get() const
 {
 	return device;
 }
-} // namespace ve
+} // namespace vkte

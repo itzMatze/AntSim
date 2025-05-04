@@ -2,7 +2,7 @@
 
 #include "SDL3/SDL_events.h"
 #include "glm/common.hpp"
-#include "event_handler.hpp"
+#include "window/event_handler.hpp"
 #include "work_context.hpp"
 #include "util/timer.hpp"
 #include <SDL3/SDL_mouse.h>
@@ -12,7 +12,7 @@ struct GPUContext
 {
 	GPUContext(AppState& app_state) : vmc(), vcc(vmc), wc(vmc, vcc)
 	{
-		vmc.construct(app_state.get_window_extent().width, app_state.get_window_extent().height);
+		vmc.construct("AntSim", app_state.get_window_extent().width, app_state.get_window_extent().height);
 		vcc.construct();
 		wc.construct(app_state);
 	}
@@ -23,9 +23,9 @@ struct GPUContext
 		vcc.destruct();
 		vmc.destruct();
 	}
-	ve::VulkanMainContext vmc;
-	ve::VulkanCommandContext vcc;
-	ve::WorkContext wc;
+	vkte::VulkanMainContext vmc;
+	vkte::VulkanCommandContext vcc;
+	WorkContext wc;
 };
 
 void dispatch_pressed_keys(EventHandler& event_handler, AppState& app_state, Window& window)

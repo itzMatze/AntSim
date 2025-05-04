@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace ve
+namespace vkte
 {
 class ExtensionsHandler
 {
@@ -24,4 +24,4 @@ private:
 
 	bool find_extension(const char* name, const std::vector<const char*>& extensions) const;
 };
-} // namespace ve
+} // namespace vkte

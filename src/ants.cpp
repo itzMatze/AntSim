@@ -2,13 +2,11 @@
 #include "vk/descriptor_set_handler.hpp"
 #include <vulkan/vulkan_handles.hpp>
 
-namespace ve
+Ants::Ants(const vkte::VulkanMainContext& vmc, vkte::Storage& storage) : vmc(vmc), storage(storage)
 {
-Ants::Ants(const VulkanMainContext& vmc, Storage& storage) : vmc(vmc), storage(storage)
-{
-	pipeline_data[CLEAR_PIPELINE] = std::make_unique<PipelineData>(PipelineData{Pipeline(vmc), DescriptorSetHandler(vmc, 1)});
-	pipeline_data[RENDER_PIPELINE] = std::make_unique<PipelineData>(PipelineData{Pipeline(vmc), DescriptorSetHandler(vmc, 1)});
-	pipeline_data[STEP_PIPELINE] = std::make_unique<PipelineData>(PipelineData{Pipeline(vmc), DescriptorSetHandler(vmc, 1)});
+	pipeline_data[CLEAR_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, 1)});
+	pipeline_data[RENDER_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, 1)});
+	pipeline_data[STEP_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, 1)});
 }
 
 void Ants::setup_storage(AppState& app_state)
@@ -19,7 +17,7 @@ void Ants::setup_storage(AppState& app_state)
 	buffers[NEST_BUFFER] = storage.add_buffer("nest_buffer", &nest, 1, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, true, QueueFamilyFlags::Transfer | QueueFamilyFlags::Compute | QueueFamilyFlags::Graphics);
 }
 
-void Ants::construct(const RenderPass& render_pass, AppState& app_state)
+void Ants::construct(const vkte::RenderPass& render_pass, AppState& app_state)
 {
 	create_descriptor_set();
 	create_pipelines(render_pass, app_state);
@@ -64,15 +62,15 @@ void Ants::render(vk::CommandBuffer& cb, AppState& app_state, const vk::Framebuf
 	cb.draw(app_state.ant_count, 1, 0, 0);
 }
 
-void Ants::create_pipelines(const RenderPass& render_pass, const AppState& app_state)
+void Ants::create_pipelines(const vkte::RenderPass& render_pass, const AppState& app_state)
 {
 	{
 		std::array<vk::SpecializationMapEntry, 1> spec_entries;
 		spec_entries[0] = vk::SpecializationMapEntry(0, 0, sizeof(uint32_t));
 		std::array<uint32_t, 1> spec_entries_data{app_state.ant_count};
 		vk::SpecializationInfo spec_info(spec_entries.size(), spec_entries.data(), sizeof(uint32_t) * spec_entries_data.size(), spec_entries_data.data());
-		ShaderInfo clear_ants_shader_info = ShaderInfo{"ants_clear.comp", vk::ShaderStageFlagBits::eCompute, spec_info};
-		Pipeline::ComputeSettings settings;
+		vkte::ShaderInfo clear_ants_shader_info = vkte::ShaderInfo{"ants_clear.comp", vk::ShaderStageFlagBits::eCompute, spec_info};
+		vkte::Pipeline::ComputeSettings settings;
 		settings.set_layout = &pipeline_data[CLEAR_PIPELINE]->dsh.get_layout();
 		settings.shader_info = &clear_ants_shader_info;
 		settings.push_constant_byte_size = sizeof(StepPushConstants);
@@ -84,10 +82,10 @@ void Ants::create_pipelines(const RenderPass& render_pass, const AppState& app_s
 		std::array<uint32_t, 1> spec_entries_data{point_size};
 		vk::SpecializationInfo spec_info(spec_entries.size(), spec_entries.data(), sizeof(uint32_t) * spec_entries_data.size(), spec_entries_data.data());
 
-		std::vector<ShaderInfo> render_shader_infos(2);
-		render_shader_infos[0] = ShaderInfo{"ants.vert", vk::ShaderStageFlagBits::eVertex, spec_info};
-		render_shader_infos[1] = ShaderInfo{"ants.frag", vk::ShaderStageFlagBits::eFragment};
-		Pipeline::GraphicsSettings settings;
+		std::vector<vkte::ShaderInfo> render_shader_infos(2);
+		render_shader_infos[0] = vkte::ShaderInfo{"ants.vert", vk::ShaderStageFlagBits::eVertex, spec_info};
+		render_shader_infos[1] = vkte::ShaderInfo{"ants.frag", vk::ShaderStageFlagBits::eFragment};
+		vkte::Pipeline::GraphicsSettings settings;
 		settings.render_pass = &render_pass;
 		settings.set_layout = &pipeline_data[RENDER_PIPELINE]->dsh.get_layout();
 		settings.shader_infos = &render_shader_infos;
@@ -117,8 +115,8 @@ void Ants::create_pipelines(const RenderPass& render_pass, const AppState& app_s
 		spec_entries[1] = vk::SpecializationMapEntry(1, sizeof(uint32_t), sizeof(uint32_t));
 		std::array<uint32_t, 2> spec_entries_data{app_state.ant_count, app_state.hash_grid_capacity};
 		vk::SpecializationInfo spec_info(spec_entries.size(), spec_entries.data(), sizeof(uint32_t) * spec_entries_data.size(), spec_entries_data.data());
-		ShaderInfo ants_step_shader_info = ShaderInfo{"ants_step.comp", vk::ShaderStageFlagBits::eCompute, spec_info};
-		Pipeline::ComputeSettings settings;
+		vkte::ShaderInfo ants_step_shader_info = vkte::ShaderInfo{"ants_step.comp", vk::ShaderStageFlagBits::eCompute, spec_info};
+		vkte::Pipeline::ComputeSettings settings;
 		settings.set_layout = &pipeline_data[STEP_PIPELINE]->dsh.get_layout();
 		settings.shader_info = &ants_step_shader_info;
 		settings.push_constant_byte_size = sizeof(StepPushConstants);
@@ -138,4 +136,3 @@ void Ants::create_descriptor_set()
 	pipeline_data[CLEAR_PIPELINE]->dsh.add_descriptor(0, 0, storage.get_buffer(buffers[ANTS_BUFFER]));
 	for (std::unique_ptr<PipelineData>& pipeline_datum : pipeline_data) pipeline_datum->dsh.construct();
 }
-} // namespace ve

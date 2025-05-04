@@ -3,9 +3,9 @@
 #include <iostream>
 #include <unordered_set>
 
-#include "vk/ve_log.hpp"
+#include "vk/vkte_log.hpp"
 
-namespace ve
+namespace vkte
 {
 void PhysicalDevice::construct(const Instance& instance, const std::optional<vk::SurfaceKHR>& surface)
 {
@@ -35,15 +35,15 @@ void PhysicalDevice::construct(const Instance& instance, const std::optional<vk:
 	}
 	else if (suitable_p_devices.size() == 1)
 	{
-		antlog::info("Only one suitable GPU. Using this one.");
+		VKTE_INFO("vkte: Only one suitable GPU. Using this one.");
 		physical_device = physical_devices[*(suitable_p_devices.begin())];
 	}
 	else
 	{
-		VE_THROW("No suitable GPUs found!");
+		VKTE_THROW("No suitable GPUs found!");
 	}
 	vk::PhysicalDeviceProperties pdp = physical_device.getProperties();
-	antlog::info("GPU: {}", std::string(pdp.deviceName.data()));
+	VKTE_INFO("vkte: GPU: {}", std::string(pdp.deviceName.data()));
 	extensions_handler.remove_missing_extensions();
 }
 
@@ -86,4 +86,4 @@ bool PhysicalDevice::is_device_suitable(uint32_t idx, const vk::PhysicalDevice p
 	std::cerr << "(suitable, " << missing_extensions << " missing optional extensions)\n";
 	return true;
 }
-} // namespace ve
+} // namespace vkte

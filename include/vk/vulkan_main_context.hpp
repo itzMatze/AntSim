@@ -3,18 +3,18 @@
 #include <memory>
 #include <vulkan/vulkan.hpp>
 #include "vk/queue_families.hpp"
-#include "window.hpp"
+#include "window/window.hpp"
 #include "vk/logical_device.hpp"
 #include "vk/physical_device.hpp"
 #include "vk_mem_alloc.h"
 
-namespace ve
+namespace vkte
 {
 class VulkanMainContext
 {
 public:
 	VulkanMainContext() = default;
-	void construct(const uint32_t width, const uint32_t height);
+	void construct(const std::string& title, const uint32_t width, const uint32_t height);
 	void destruct();
 	std::vector<vk::SurfaceFormatKHR> get_surface_formats() const;
 	std::vector<vk::PresentModeKHR> get_surface_present_modes() const;
@@ -41,4 +41,4 @@ public:
 	LogicalDevice logical_device;
 	VmaAllocator va;
 };
-} // namespace ve
+} // namespace vkte

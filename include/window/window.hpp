@@ -7,7 +7,7 @@
 class Window
 {
 public:
-	Window(const uint32_t width, const uint32_t height);
+	Window(const std::string& title, const uint32_t width, const uint32_t height);
 	void destruct();
 	SDL_Window* get() const;
 	std::vector<const char*> get_required_extensions() const;

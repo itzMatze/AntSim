@@ -5,8 +5,9 @@
 #include <vulkan/vulkan.hpp>
 #include "vk/buffer.hpp"
 #include "vk/image.hpp"
+#include "vk/vkte_log.hpp"
 
-namespace ve
+namespace vkte
 {
 class Storage
 {
@@ -22,7 +23,7 @@ public:
 			if (buffers.at(buffer_names.at(name)).buffer.has_value())
 			{
 				// buffer name is already taken by an existing buffer
-				antlog::warn("Duplicate buffer name: {}", name);
+				VKTE_WARN("vkte: Duplicate buffer name: {}", name);
 			}
 			else
 			{
@@ -40,7 +41,7 @@ public:
 		vk::DebugUtilsObjectNameInfoEXT duoni(b.objectType, uint64_t(static_cast<vk::Buffer::CType>(b)), name.c_str());
 		vmc.logical_device.get().setDebugUtilsObjectNameEXT(duoni);
 		VmaAllocationInfo alloc_info = buffers.at(buffer_names.at(name)).buffer.value().get_allocation_info();
-		antlog::debug("Creating buffer \"{}\", Size: {}, Type: {}", name, alloc_info.size, alloc_info.memoryType);
+		VKTE_DEBUG("vkte: Creating buffer \"{}\", Size: {}, Type: {}", name, alloc_info.size, alloc_info.memoryType);
 		return buffer_names.at(name);
 	}
 
@@ -52,7 +53,7 @@ public:
 			if (images.at(image_names.at(name)).image.has_value())
 			{
 				// image name is already taken by an existing image
-				antlog::warn("Duplicate image name: {}", name);
+				VKTE_WARN("vkte: Duplicate image name: {}", name);
 			}
 			else
 			{
@@ -70,7 +71,7 @@ public:
 		vk::DebugUtilsObjectNameInfoEXT duoni(i.objectType, uint64_t(static_cast<vk::Image::CType>(i)), name.c_str());
 		vmc.logical_device.get().setDebugUtilsObjectNameEXT(duoni);
 		VmaAllocationInfo alloc_info = images.at(image_names.at(name)).image.value().get_allocation_info();
-		antlog::debug("Creating image \"{}\", Size: {}, Type: {}", name, alloc_info.size, alloc_info.memoryType);
+		VKTE_DEBUG("vkte: Creating image \"{}\", Size: {}, Type: {}", name, alloc_info.size, alloc_info.memoryType);
 		return image_names.at(name);
 	}
 
@@ -104,4 +105,4 @@ private:
 	std::vector<ImageElement> images;
 	std::unordered_map<std::string, uint32_t> image_names;
 };
-} // namespace ve
+} // namespace vkte

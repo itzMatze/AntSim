@@ -1,6 +1,6 @@
 #include "vk/render_pass.hpp"
 
-namespace ve
+namespace vkte
 {
 RenderPass::RenderPass(const VulkanMainContext& vmc) : vmc(vmc)
 {}
@@ -74,4 +74,4 @@ vk::RenderPass RenderPass::get() const
 {
 	return render_pass;
 }
-} // namespace ve
+} // namespace vkte

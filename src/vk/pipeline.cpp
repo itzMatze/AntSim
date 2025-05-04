@@ -1,9 +1,9 @@
 #include "vk/pipeline.hpp"
 
-#include "vk/ve_log.hpp"
+#include "vk/vkte_log.hpp"
 #include "vk/render_pass.hpp"
 
-namespace ve
+namespace vkte
 {
 Pipeline::Pipeline(const VulkanMainContext& vmc) : vmc(vmc)
 {}
@@ -139,7 +139,7 @@ void Pipeline::construct(const GraphicsSettings& settings)
 	gpci.basePipelineIndex = -1;
 
 	vk::ResultValue<vk::Pipeline> pipeline_result_value = vmc.logical_device.get().createGraphicsPipeline(VK_NULL_HANDLE, gpci);
-	VE_CHECK(pipeline_result_value.result, "Failed to create pipeline!");
+	VKTE_CHECK(pipeline_result_value.result, "Failed to create pipeline!");
 	pipeline = pipeline_result_value.value;
 
 	for (auto& shader : shaders) shader.destruct();
@@ -175,7 +175,7 @@ void Pipeline::construct(const ComputeSettings& settings)
 	cpci.layout = pipeline_layout;
 
 	vk::ResultValue<vk::Pipeline> comute_pipeline_result_value = vmc.logical_device.get().createComputePipeline(VK_NULL_HANDLE, cpci);
-	VE_CHECK(comute_pipeline_result_value.result, "Failed to create compute pipeline!");
+	VKTE_CHECK(comute_pipeline_result_value.result, "Failed to create compute pipeline!");
 	pipeline = comute_pipeline_result_value.value;
 
 	shader.destruct();
@@ -196,4 +196,4 @@ const vk::PipelineLayout& Pipeline::get_layout() const
 {
 	return pipeline_layout;
 }
-} // namespace ve
+} // namespace vkte

@@ -6,7 +6,7 @@
 #include "vk/extensions_handler.hpp"
 #include "vk/instance.hpp"
 
-namespace ve
+namespace vkte
 {
 class PhysicalDevice
 {
@@ -23,4 +23,4 @@ private:
 
 	bool is_device_suitable(uint32_t idx, const vk::PhysicalDevice p_device, const std::optional<vk::SurfaceKHR>& surface);
 };
-} // namespace ve
+} // namespace vkte

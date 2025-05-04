@@ -8,9 +8,7 @@ set(GLM_DIR "${PROJECT_SOURCE_DIR}/dependencies/glm")
 set(SOURCE_FILES
 	src/ants.cpp
 	src/application.cpp
-	src/event_handler.cpp
 	src/hash_grid.cpp
-	src/ui.cpp
 	src/work_context.cpp
 	src/util/random_generator.cpp
 	src/vk/command_pool.cpp
@@ -30,7 +28,9 @@ set(SOURCE_FILES
 	src/vk/synchronization.cpp
 	src/vk/vulkan_command_context.cpp
 	src/vk/vulkan_main_context.cpp
-	src/vk/window.cpp
+	src/window/event_handler.cpp
+	src/window/ui.cpp
+	src/window/window.cpp
 	"${PROJECT_SOURCE_DIR}/dependencies/imgui/imgui.cpp"
 	"${PROJECT_SOURCE_DIR}/dependencies/imgui/backends/imgui_impl_sdl3.cpp"
 	"${PROJECT_SOURCE_DIR}/dependencies/imgui/backends/imgui_impl_vulkan.cpp"
@@ -53,4 +53,4 @@ target_include_directories(AntSim PRIVATE "${PROJECT_SOURCE_DIR}/include"
 	"${PROJECT_SOURCE_DIR}/dependencies/imgui/"
 )
 target_link_libraries(AntSim PRIVATE spdlog::spdlog SDL3::SDL3)
-target_compile_definitions(AntSim PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1 IMGUI_IMPL_VULKAN_NO_PROTOTYPES=1)
+target_compile_definitions(AntSim PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1 IMGUI_IMPL_VULKAN_NO_PROTOTYPES=1 VKTE_LOGGING=1)

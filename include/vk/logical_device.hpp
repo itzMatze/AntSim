@@ -6,7 +6,7 @@
 #include "vk/queue_families.hpp"
 #include "vk/physical_device.hpp"
 
-namespace ve
+namespace vkte
 {
 enum class QueueIndex
 {
@@ -27,4 +27,4 @@ public:
 private:
 	vk::Device device;
 };
-} // namespace ve
+} // namespace vkte

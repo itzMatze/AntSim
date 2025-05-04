@@ -1,7 +1,7 @@
 #include "vk/queue_families.hpp"
-#include "vk/ve_log.hpp"
+#include "vk/vkte_log.hpp"
 
-namespace ve
+namespace vkte
 {
 void QueueFamilies::construct(vk::PhysicalDevice physical_device)
 {
@@ -45,7 +45,7 @@ uint32_t QueueFamilies::get(QueueFamilyFlags queue) const
 	else if (queue == QueueFamilyFlags::Compute) return indices.compute;
 	else if (queue == QueueFamilyFlags::Transfer) return indices.transfer;
 	else if (queue == QueueFamilyFlags::Present) return indices.present;
-	else VE_THROW("Invalid queue!");
+	else VKTE_THROW("Invalid queue!");
 }
 
 int32_t get_queue_score(vk::QueueFamilyProperties queue_family, vk::QueueFlagBits target)
@@ -101,7 +101,7 @@ void QueueFamilies::get_queue_families(vk::PhysicalDevice& physical_device, cons
 			indices.transfer = i;
 		}
 	}
-	VE_ASSERT(indices.graphics != -1 && indices.compute != -1 && indices.transfer != -1 && indices.present != -1, "One queue family could not be satisfied!");
+	VKTE_ASSERT(indices.graphics != -1 && indices.compute != -1 && indices.transfer != -1 && indices.present != -1, "One queue family could not be satisfied!");
 	if (indices.graphics == indices.compute)
 	{
 		graphics |= compute;
@@ -133,4 +133,4 @@ void QueueFamilies::get_queue_families(vk::PhysicalDevice& physical_device, cons
 		present |= transfer;
 	}
 }
-} // namespace ve
+} // namespace vkte

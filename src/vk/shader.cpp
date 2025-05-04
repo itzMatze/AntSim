@@ -4,9 +4,9 @@
 #include <filesystem>
 #include <iostream>
 
-#include "vk/ve_log.hpp"
+#include "vk/vkte_log.hpp"
 
-namespace ve
+namespace vkte
 {
 Shader::Shader(const vk::Device& device, const std::string filename, vk::ShaderStageFlagBits shader_stage_flag) : name(filename), device(device)
 {
@@ -15,8 +15,8 @@ Shader::Shader(const vk::Device& device, const std::string filename, vk::ShaderS
 	if (!std::filesystem::exists(shader_bin_dir)) std::filesystem::create_directory(shader_bin_dir);
 	std::filesystem::path shader_file(shader_dir / filename);
 	std::filesystem::path shader_bin_file(shader_bin_dir / (filename + ".spv"));
-	VE_ASSERT(std::filesystem::exists(shader_file), "Failed to find shader file \"" + filename + "\"");
-	const std::string glslc_args = std::format("--target-env=vulkan1.2 -O -o {0} {1}", shader_bin_file.string(), shader_file.string());
+	VKTE_ASSERT(std::filesystem::exists(shader_file), "Failed to find shader file \"" + filename + "\"");
+	const std::string glslc_args = std::format("--target-env=vulkan1.4 -O -o {0} {1}", shader_bin_file.string(), shader_file.string());
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 	system(("dependencies\\glslc.exe " + glslc_args).c_str());
 #elif __linux__
@@ -53,10 +53,10 @@ const vk::PipelineShaderStageCreateInfo& Shader::get_stage_create_info() const
 std::string Shader::read_shader_file(const std::string& filename)
 {
 	std::ifstream file(filename, std::ios::binary);
-	VE_ASSERT(file.is_open(), "Failed to open shader file \"" + filename + "\"");
+	VKTE_ASSERT(file.is_open(), "Failed to open shader file \"" + filename + "\"");
 	std::ostringstream file_stream;
 	file_stream << file.rdbuf();
 	return file_stream.str();
 }
-} // namespace ve
+} // namespace vkte
 

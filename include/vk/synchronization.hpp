@@ -2,39 +2,23 @@
 
 #include <vulkan/vulkan.hpp>
 
-namespace ve
+namespace vkte
 {
 class Synchronization
 {
 public:
-	enum SemaphoreNames
-	{
-		S_IMAGE_AVAILABLE = 0,
-		S_RENDER_FINISHED = 1,
-		S_ANTS_STEP_FINISHED = 2,
-		S_FRAME_TO_FRAME = 3,
-		SEMAPHORE_COUNT
-	};
-
-	enum FenceNames
-	{
-		F_RENDER_FINISHED = 0,
-		F_COMPUTE_FINISHED = 1,
-		FENCE_COUNT
-	};
-
 	Synchronization(const vk::Device& logical_device);
-	void construct();
+	void construct(uint32_t semaphore_count, uint32_t fence_count);
 	void destruct();
-	const vk::Semaphore& get_semaphore(SemaphoreNames name) const;
-	const vk::Fence& get_fence(FenceNames name) const;
-	bool is_fence_finished(FenceNames name) const;
-	void wait_for_fence(FenceNames name) const;
-	void reset_fence(FenceNames name) const;
+	const vk::Semaphore& get_semaphore(uint32_t semaphore_index) const;
+	const vk::Fence& get_fence(uint32_t fence_index) const;
+	bool is_fence_finished(uint32_t fence_index) const;
+	void wait_for_fence(uint32_t fence_index) const;
+	void reset_fence(uint32_t fence_index) const;
 
 private:
 	const vk::Device& device;
 	std::vector<vk::Semaphore> semaphores;
 	std::vector<vk::Fence> fences;
 };
-} // namespace ve
+} // namespace vkte

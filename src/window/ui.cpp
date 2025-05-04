@@ -1,16 +1,12 @@
-#include "ui.hpp"
+#include "window/ui.hpp"
 #include "imgui.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "backends/imgui_impl_sdl3.h"
 
-namespace ve
-{
-constexpr float update_weight = 0.1f;
-
-UI::UI(const VulkanMainContext& vmc) : vmc(vmc)
+UI::UI(const vkte::VulkanMainContext& vmc) : vmc(vmc)
 {}
 
-void UI::construct(VulkanCommandContext& vcc, const RenderPass& render_pass, uint32_t frames)
+void UI::construct(vkte::VulkanCommandContext& vcc, const vkte::RenderPass& render_pass, uint32_t frames)
 {
 	std::vector<vk::DescriptorPoolSize> pool_sizes =
 	{
@@ -66,24 +62,18 @@ void UI::destruct()
 	vmc.logical_device.get().destroyDescriptorPool(imgui_pool);
 }
 
-void UI::draw(vk::CommandBuffer& cb, AppState& app_state)
+void UI::new_frame(const std::string& title)
 {
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
-	ImGui::Begin("AntSim");
-	ImGui::PushItemWidth(80.0f);
+	ImGui::Begin(title.c_str());
+}
 
-	frame_time_smooth = frame_time_smooth * (1 - update_weight) + app_state.frame_time * update_weight;
-	ImGui::Text("%.4f ms; FPS: %.2f", frame_time_smooth * 1000, 1.0 / frame_time_smooth);
-	ImGui::Text("total time: %.4f s", app_state.total_time);
-	ImGui::Text("RENDERING_ALL: %.4f ms", app_state.device_timings[DeviceTimer::RENDERING_ALL]);
-	ImGui::Text("ANTS_STEP: %.4f ms", app_state.device_timings[DeviceTimer::ANTS_STEP]);
-	ImGui::Text("HASH_GRID_STEP: %.4f ms", app_state.device_timings[DeviceTimer::HASH_GRID_STEP]);
+void UI::end_frame(vk::CommandBuffer& cb)
+{
 	ImGui::End();
 	ImGui::EndFrame();
-
 	ImGui::Render();
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cb);
 }
-} // namespace ve

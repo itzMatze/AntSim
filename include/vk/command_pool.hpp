@@ -3,7 +3,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
-namespace ve
+namespace vkte
 {
 	class CommandPool
 	{
@@ -17,4 +17,4 @@ namespace ve
 		vk::Device device;
 		vk::CommandPool command_pool;
 	};
-} // namespace ve
+} // namespace vkte

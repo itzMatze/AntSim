@@ -1,6 +1,6 @@
 #include "vk/vulkan_main_context.hpp"
 
-#include "vk/ve_log.hpp"
+#include "vk/vkte_log.hpp"
 #define VMA_STATIC_VULKAN_FUNCTIONS 0
 #define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
 #define VMA_IMPLEMENTATION
@@ -13,28 +13,28 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debug_callback(vk::DebugUtilsMessageSeve
 	switch (message_severity)
 	{
 		case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
-			antlog::debug(callback_data->pMessage);
+			VKTE_DEBUG("vkte: {}", callback_data->pMessage);
 			break;
 		case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo:
-			antlog::info(callback_data->pMessage);
+			VKTE_INFO("vkte: {}", callback_data->pMessage);
 			break;
 		case vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning:
-			antlog::warn(callback_data->pMessage);
+			VKTE_WARN("vkte: {}", callback_data->pMessage);
 			break;
 		case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError:
-			antlog::error(callback_data->pMessage);
+			VKTE_ERROR("vkte: {}", callback_data->pMessage);
 			break;
 	}
 	return VK_FALSE;
 }
 
-namespace ve
+namespace vkte
 {
-void VulkanMainContext::construct(const uint32_t width, const uint32_t height)
+void VulkanMainContext::construct(const std::string& title, const uint32_t width, const uint32_t height)
 {
 	PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
 	VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
-	window = std::make_unique<Window>(width, height);
+	window = std::make_unique<Window>(title, width, height);
 	instance.construct(window->get_required_extensions());
 	VULKAN_HPP_DEFAULT_DISPATCHER.init(instance.get());
 	surface = window->create_surface(instance.get());
@@ -117,4 +117,4 @@ void VulkanMainContext::setup_debug_messenger()
 	dumci.pfnUserCallback = debug_callback;
 	debug_messenger = instance.get().createDebugUtilsMessengerEXT(dumci, nullptr, VULKAN_HPP_DEFAULT_DISPATCHER);
 }
-} // namespace ve
+} // namespace vkte

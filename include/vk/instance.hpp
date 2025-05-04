@@ -5,7 +5,7 @@
 
 #include "vk/extensions_handler.hpp"
 
-namespace ve
+namespace vkte
 {
 class Instance
 {
@@ -22,4 +22,4 @@ private:
 	ExtensionsHandler extensions_handler;
 	ExtensionsHandler validation_handler;
 };
-} // namespace ve
+} // namespace vkte

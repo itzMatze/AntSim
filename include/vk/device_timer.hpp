@@ -1,37 +1,33 @@
 #pragma once
 
-#include "ve_log.hpp"
+#include "vkte_log.hpp"
 #include "vk/vulkan_main_context.hpp"
+#include <ratio>
 
-namespace ve
+namespace vkte
 {
 class DeviceTimer
 {
 public:
-	enum TimerNames {
-		RENDERING_ALL = 0,
-		ANTS_STEP = 1,
-		HASH_GRID_STEP = 2,
-		TIMER_COUNT
-	};
-
 	DeviceTimer(const VulkanMainContext& vmc);
+	void construct(uint32_t timer_count);
 	void destruct();
-	void reset(vk::CommandBuffer& cb, const std::vector<TimerNames>& timers);
-	void start(vk::CommandBuffer& cb, TimerNames t, vk::PipelineStageFlagBits stage);
-	void stop(vk::CommandBuffer& cb, TimerNames t, vk::PipelineStageFlagBits stage);
+	void reset(vk::CommandBuffer& cb, uint32_t timer_index);
+	void reset_all(vk::CommandBuffer& cb);
+	void start(vk::CommandBuffer& cb, uint32_t timer_index, vk::PipelineStageFlagBits stage);
+	void stop(vk::CommandBuffer& cb, uint32_t timer_index, vk::PipelineStageFlagBits stage);
 
 	template<class Precision = std::milli>
 	double inline get_result_by_idx(uint32_t i)
 	{
-		VE_ASSERT(i < TIMER_COUNT, "Trying to access timer index that does not exist in TimerNames");
+		VKTE_ASSERT(i < result_fetched.size(), "Trying to access invalid timer index.");
 		return fetch_result<Precision>(i);
 	}
 
 	template<class Precision = std::milli>
-	double inline get_result(TimerNames t)
+	double inline get_result(uint32_t timer_index)
 	{
-		return fetch_result<Precision>(t);
+		return fetch_result<Precision>(timer_index);
 	}
 
 private:
@@ -51,4 +47,4 @@ private:
 	float timestamp_period;
 	std::vector<bool> result_fetched;
 };
-} // namespace ve
+} // namespace vkte

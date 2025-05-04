@@ -3,13 +3,11 @@
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_handles.hpp>
 
-namespace ve
+HashGrid::HashGrid(const vkte::VulkanMainContext& vmc, vkte::Storage& storage) : vmc(vmc), storage(storage)
 {
-HashGrid::HashGrid(const VulkanMainContext& vmc, Storage& storage) : vmc(vmc), storage(storage)
-{
-	pipeline_data[CLEAR_PIPELINE] = std::make_unique<PipelineData>(PipelineData{Pipeline(vmc), DescriptorSetHandler(vmc, 1)});
-	pipeline_data[RENDER_PIPELINE] = std::make_unique<PipelineData>(PipelineData{Pipeline(vmc), DescriptorSetHandler(vmc, 1)});
-	pipeline_data[STEP_PIPELINE] = std::make_unique<PipelineData>(PipelineData{Pipeline(vmc), DescriptorSetHandler(vmc, 1)});
+	pipeline_data[CLEAR_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, 1)});
+	pipeline_data[RENDER_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, 1)});
+	pipeline_data[STEP_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, 1)});
 }
 
 void HashGrid::setup_storage(AppState& app_state)
@@ -18,7 +16,7 @@ void HashGrid::setup_storage(AppState& app_state)
 	buffers[HASH_GRID_BUFFER] = storage.add_buffer("hash_grid_buffer", hash_grid_data, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferSrc, true, QueueFamilyFlags::Transfer | QueueFamilyFlags::Compute | QueueFamilyFlags::Graphics);
 }
 
-void HashGrid::construct(const RenderPass& render_pass, AppState& app_state)
+void HashGrid::construct(const vkte::RenderPass& render_pass, AppState& app_state)
 {
 	create_descriptor_set();
 	create_pipelines(render_pass, app_state);
@@ -64,15 +62,15 @@ void HashGrid::render(vk::CommandBuffer& cb, AppState& app_state, const vk::Fram
 	cb.draw(3, 1, 0, 0);
 }
 
-void HashGrid::create_pipelines(const RenderPass& render_pass, const AppState& app_state)
+void HashGrid::create_pipelines(const vkte::RenderPass& render_pass, const AppState& app_state)
 {
 	{
 		std::array<vk::SpecializationMapEntry, 1> spec_entries;
 		spec_entries[0] = vk::SpecializationMapEntry(0, 0, sizeof(uint32_t));
 		std::array<uint32_t, 1> spec_entries_data{app_state.hash_grid_capacity};
 		vk::SpecializationInfo spec_info(spec_entries.size(), spec_entries.data(), sizeof(uint32_t) * spec_entries_data.size(), spec_entries_data.data());
-		ShaderInfo clear_hash_grid_shader_info = ShaderInfo{"hash_grid_clear.comp", vk::ShaderStageFlagBits::eCompute, spec_info};
-		Pipeline::ComputeSettings settings;
+		vkte::ShaderInfo clear_hash_grid_shader_info = vkte::ShaderInfo{"hash_grid_clear.comp", vk::ShaderStageFlagBits::eCompute, spec_info};
+		vkte::Pipeline::ComputeSettings settings;
 		settings.set_layout = &pipeline_data[CLEAR_PIPELINE]->dsh.get_layout();
 		settings.shader_info = &clear_hash_grid_shader_info;
 		settings.push_constant_byte_size = sizeof(StepPushConstants);
@@ -83,10 +81,10 @@ void HashGrid::create_pipelines(const RenderPass& render_pass, const AppState& a
 		spec_entries[0] = vk::SpecializationMapEntry(0, 0, sizeof(uint32_t));
 		std::array<uint32_t, 1> spec_entries_data{app_state.hash_grid_capacity};
 		vk::SpecializationInfo spec_info(spec_entries.size(), spec_entries.data(), sizeof(uint32_t) * spec_entries_data.size(), spec_entries_data.data());
-		std::vector<ShaderInfo> render_shader_infos(2);
-		render_shader_infos[0] = ShaderInfo{"hash_grid.vert", vk::ShaderStageFlagBits::eVertex};
-		render_shader_infos[1] = ShaderInfo{"hash_grid.frag", vk::ShaderStageFlagBits::eFragment, spec_info};
-		Pipeline::GraphicsSettings settings;
+		std::vector<vkte::ShaderInfo> render_shader_infos(2);
+		render_shader_infos[0] = vkte::ShaderInfo{"hash_grid.vert", vk::ShaderStageFlagBits::eVertex};
+		render_shader_infos[1] = vkte::ShaderInfo{"hash_grid.frag", vk::ShaderStageFlagBits::eFragment, spec_info};
+		vkte::Pipeline::GraphicsSettings settings;
 		settings.render_pass = &render_pass;
 		settings.set_layout = &pipeline_data[RENDER_PIPELINE]->dsh.get_layout();
 		settings.polygon_mode = vk::PolygonMode::eFill;
@@ -101,8 +99,8 @@ void HashGrid::create_pipelines(const RenderPass& render_pass, const AppState& a
 		spec_entries[0] = vk::SpecializationMapEntry(0, 0, sizeof(uint32_t));
 		std::array<uint32_t, 1> spec_entries_data{app_state.hash_grid_capacity};
 		vk::SpecializationInfo spec_info(spec_entries.size(), spec_entries.data(), sizeof(uint32_t) * spec_entries_data.size(), spec_entries_data.data());
-		ShaderInfo hash_grid_step_shader_info = ShaderInfo{"hash_grid_step.comp", vk::ShaderStageFlagBits::eCompute, spec_info};
-		Pipeline::ComputeSettings settings;
+		vkte::ShaderInfo hash_grid_step_shader_info = vkte::ShaderInfo{"hash_grid_step.comp", vk::ShaderStageFlagBits::eCompute, spec_info};
+		vkte::Pipeline::ComputeSettings settings;
 		settings.set_layout = &pipeline_data[STEP_PIPELINE]->dsh.get_layout();
 		settings.shader_info = &hash_grid_step_shader_info;
 		settings.push_constant_byte_size = sizeof(StepPushConstants);
@@ -122,4 +120,3 @@ void HashGrid::create_descriptor_set()
 	pipeline_data[RENDER_PIPELINE]->dsh.add_descriptor(0, 1, storage.get_buffer_by_name("nest_buffer"));
 	for (std::unique_ptr<PipelineData>& pipeline_datum : pipeline_data) pipeline_datum->dsh.construct();
 }
-} // namespace ve

@@ -19,14 +19,12 @@ struct HashGridCellData
 	float distance_to_food_age = 0.0f;
 };
 
-namespace ve
-{
 class HashGrid
 {
 public:
-	HashGrid(const VulkanMainContext& vmc, Storage& storage);
+	HashGrid(const vkte::VulkanMainContext& vmc, vkte::Storage& storage);
 	void setup_storage(AppState& app_state);
-	void construct(const RenderPass& render_pass, AppState& app_state);
+	void construct(const vkte::RenderPass& render_pass, AppState& app_state);
 	void destruct();
 	void clear(vk::CommandBuffer& cb, AppState& app_state);
 	void compute(vk::CommandBuffer& cb, AppState& app_state);
@@ -49,12 +47,12 @@ private:
 
 	struct PipelineData
 	{
-		Pipeline pipeline;
-		DescriptorSetHandler dsh;
+		vkte::Pipeline pipeline;
+		vkte::DescriptorSetHandler dsh;
 	};
 
-	const VulkanMainContext& vmc;
-	Storage& storage;
+	const vkte::VulkanMainContext& vmc;
+	vkte::Storage& storage;
 	std::array<int32_t, BUFFER_COUNT> buffers;
 	std::array<std::unique_ptr<PipelineData>, PIPELINE_COUNT> pipeline_data;
 
@@ -73,8 +71,7 @@ private:
 		glm::vec2 range_max;
 	} rpc;
 
-	void create_pipelines(const RenderPass& render_pass, const AppState& app_state);
+	void create_pipelines(const vkte::RenderPass& render_pass, const AppState& app_state);
 	void create_descriptor_set();
 	void clear_storage_indices();
 };
-} // namespace ve

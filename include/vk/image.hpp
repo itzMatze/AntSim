@@ -3,7 +3,7 @@
 #include "vk/vulkan_command_context.hpp"
 #include "vk_mem_alloc.h"
 
-namespace ve
+namespace vkte
 {
 	void blit_image(vk::CommandBuffer& cb, vk::Image& src, uint32_t src_mip_map_lvl, vk::Offset3D src_offset, vk::Image& dst, uint32_t dst_mip_map_lvl, vk::Offset3D dst_offset, uint32_t layer_count);
 	void copy_image(vk::CommandBuffer& cb, vk::Image& src, vk::Image& dst, uint32_t width, uint32_t height, uint32_t layer_count);
@@ -47,4 +47,4 @@ namespace ve
 		void create_image_view(vk::ImageAspectFlags aspects, vk::ImageViewType image_view_type = vk::ImageViewType::e2D);
 		void generate_mipmaps(VulkanCommandContext& vcc);
 	};
-} // namespace ve
+} // namespace vkte

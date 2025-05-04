@@ -3,7 +3,7 @@
 #include <string>
 #include <vulkan/vulkan.hpp>
 
-namespace ve
+namespace vkte
 {
 struct ShaderInfo
 {
@@ -28,4 +28,4 @@ private:
 
 	std::string read_shader_file(const std::string& filename);
 };
-} // namespace ve
+} // namespace vkte

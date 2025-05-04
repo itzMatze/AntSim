@@ -2,9 +2,9 @@
 
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_vulkan.h"
-#include "vk/ve_log.hpp"
+#include "vk/vkte_log.hpp"
 
-namespace ve
+namespace vkte
 {
 Swapchain::Swapchain(const VulkanMainContext& vmc, VulkanCommandContext& vcc, Storage& storage) : vmc(vmc), vcc(vcc), storage(storage), render_pass(vmc)
 {}
@@ -197,6 +197,6 @@ vk::Format Swapchain::choose_depth_format()
 			return format;
 		}
 	}
-	VE_THROW("Failed to find supported format!");
+	VKTE_THROW("Failed to find supported format!");
 }
-} // namespace ve
+} // namespace vkte

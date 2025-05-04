@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-namespace ve
+namespace vkte
 {
 const std::vector<const char*>& ExtensionsHandler::get_missing_extensions() const
 {
@@ -71,4 +71,4 @@ bool ExtensionsHandler::find_extension(const char* name, const std::vector<const
 	}
 	return false;
 }
-} // namespace ve
+} // namespace vkte

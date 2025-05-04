@@ -1,14 +1,14 @@
-#include "vk/window.hpp"
+#include "window/window.hpp"
 
-#include "vk/ve_log.hpp"
+#include "vk/vkte_log.hpp"
 #define SDL_MAIN_HANDLED
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 
-Window::Window(const uint32_t width, const uint32_t height)
+Window::Window(const std::string& title, const uint32_t width, const uint32_t height)
 {
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-	window = SDL_CreateWindow("AntSim", width, height, SDL_WINDOW_VULKAN);
+	window = SDL_CreateWindow(title.c_str(), width, height, SDL_WINDOW_VULKAN);
 }
 
 void Window::destruct()
@@ -37,6 +37,6 @@ std::vector<const char*> Window::get_required_extensions() const
 vk::SurfaceKHR Window::create_surface(const vk::Instance& instance)
 {
 	vk::SurfaceKHR surface;
-	VE_ASSERT(SDL_Vulkan_CreateSurface(window, instance, nullptr, reinterpret_cast<VkSurfaceKHR*>(&surface)), "Failed to create surface!");
+	VKTE_ASSERT(SDL_Vulkan_CreateSurface(window, instance, nullptr, reinterpret_cast<VkSurfaceKHR*>(&surface)), "Failed to create surface!");
 	return surface;
 }

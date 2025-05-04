@@ -3,7 +3,7 @@
 #include <vulkan/vulkan.hpp>
 #include "vk/vulkan_main_context.hpp"
 
-namespace ve
+namespace vkte
 {
 class RenderPass
 {
@@ -19,4 +19,4 @@ private:
 	const VulkanMainContext& vmc;
 	vk::RenderPass render_pass;
 };
-} // namespace ve
+} // namespace vkte

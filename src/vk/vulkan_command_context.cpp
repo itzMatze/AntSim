@@ -1,8 +1,6 @@
 #include "vk/vulkan_command_context.hpp"
 
-#include "vk/ve_log.hpp"
-
-namespace ve
+namespace vkte
 {
 VulkanCommandContext::VulkanCommandContext(const VulkanMainContext& vmc) : vmc(vmc), command_pools(TYPE_COUNT), one_time_cbs(TYPE_COUNT)
 {}
@@ -82,4 +80,4 @@ void VulkanCommandContext::submit(const vk::CommandBuffer& cb, const vk::Queue& 
 	if (wait_idle) queue.waitIdle();
 	cb.reset();
 }
-} // namespace ve
+} // namespace vkte

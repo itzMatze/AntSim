@@ -4,7 +4,7 @@
 #include "vk/command_pool.hpp"
 #include "vk/vulkan_main_context.hpp"
 
-namespace ve
+namespace vkte
 {
 class VulkanCommandContext
 {
@@ -41,4 +41,4 @@ private:
 
 	void submit(const vk::CommandBuffer& cb, const vk::Queue& queue, bool wait_idle) const;
 };
-} // namespace ve
+} // namespace vkte

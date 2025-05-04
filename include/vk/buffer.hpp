@@ -4,11 +4,11 @@
 #include <vulkan/vulkan.hpp>
 
 #include "vk/queue_families.hpp"
-#include "vk/ve_log.hpp"
+#include "vk/vkte_log.hpp"
 #include "vk/vulkan_command_context.hpp"
 #include "vk/vulkan_main_context.hpp"
 
-namespace ve
+namespace vkte
 {
 class Buffer
 {
@@ -58,7 +58,7 @@ public:
 
 	void update_data_bytes(int constant, std::size_t byte_count)
 	{
-		VE_ASSERT(byte_count <= byte_size, "Data is larger than buffer!");
+		VKTE_ASSERT(byte_count <= byte_size, "Data is larger than buffer!");
 
 		if (device_local)
 		{
@@ -90,7 +90,7 @@ public:
 
 	void update_data_bytes(const void* data, std::size_t byte_count)
 	{
-		VE_ASSERT(byte_count <= byte_size, "Data is larger than buffer!");
+		VKTE_ASSERT(byte_count <= byte_size, "Data is larger than buffer!");
 
 		if (device_local)
 		{
@@ -140,7 +140,7 @@ public:
 
 	void obtain_data_bytes(void* data, std::size_t byte_count)
 	{
-		VE_ASSERT(byte_count <= byte_size, "Cannot get more bytes than size of buffer!");
+		VKTE_ASSERT(byte_count <= byte_size, "Cannot get more bytes than size of buffer!");
 
 		if (device_local)
 		{
@@ -248,4 +248,4 @@ private:
 	vk::Buffer buffer;
 	VmaAllocation vmaa;
 };
-} // namespace ve
+} // namespace vkte

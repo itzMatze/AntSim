@@ -5,7 +5,7 @@
 #include "vk/image.hpp"
 #include "vk/vulkan_main_context.hpp"
 
-namespace ve
+namespace vkte
 {
 class DescriptorSetHandler
 {
@@ -42,4 +42,4 @@ private:
 	vk::DescriptorPool pool;
 	std::vector<vk::DescriptorSet> sets;
 };
-} // namespace ve
+} // namespace vkte

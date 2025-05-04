@@ -1,4 +1,4 @@
-#include "event_handler.hpp"
+#include "window/event_handler.hpp"
 
 #include "backends/imgui_impl_sdl3.h"
 
@@ -141,6 +141,39 @@ void EventHandler::dispatch_event(SDL_Event e)
 			break;
 		case SDLK_F1:
 			apply_key_event(Key::F1, e.type);
+			break;
+		case SDLK_F2:
+			apply_key_event(Key::F2, e.type);
+			break;
+		case SDLK_F3:
+			apply_key_event(Key::F3, e.type);
+			break;
+		case SDLK_F4:
+			apply_key_event(Key::F4, e.type);
+			break;
+		case SDLK_F5:
+			apply_key_event(Key::F5, e.type);
+			break;
+		case SDLK_F6:
+			apply_key_event(Key::F6, e.type);
+			break;
+		case SDLK_F7:
+			apply_key_event(Key::F7, e.type);
+			break;
+		case SDLK_F8:
+			apply_key_event(Key::F8, e.type);
+			break;
+		case SDLK_F9:
+			apply_key_event(Key::F9, e.type);
+			break;
+		case SDLK_F10:
+			apply_key_event(Key::F10, e.type);
+			break;
+		case SDLK_F11:
+			apply_key_event(Key::F11, e.type);
+			break;
+		case SDLK_F12:
+			apply_key_event(Key::F12, e.type);
 			break;
 		case SDLK_0:
 			apply_key_event(Key::Zero, e.type);

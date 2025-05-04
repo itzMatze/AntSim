@@ -1,6 +1,6 @@
 #include "vk/command_pool.hpp"
 
-namespace ve
+namespace vkte
 {
 CommandPool::CommandPool(const vk::Device& logical_device, uint32_t queue_family_idx) : device(logical_device)
 {
@@ -26,4 +26,4 @@ void CommandPool::destruct()
 {
 	device.destroyCommandPool(command_pool);
 }
-} // namespace ve
+} // namespace vkte

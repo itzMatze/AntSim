@@ -5,7 +5,7 @@
 #include "vk/vulkan_main_context.hpp"
 #include "vk/shader.hpp"
 
-namespace ve
+namespace vkte
 {
 class Pipeline
 {
@@ -43,4 +43,4 @@ private:
 	vk::PipelineLayout pipeline_layout;
 	vk::Pipeline pipeline;
 };
-} // namespace ve
+} // namespace vkte

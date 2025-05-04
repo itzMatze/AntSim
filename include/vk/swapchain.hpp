@@ -5,7 +5,7 @@
 #include "vk/storage.hpp"
 #include "vk/vulkan_main_context.hpp"
 
-namespace ve
+namespace vkte
 {
 class Swapchain
 {
@@ -42,4 +42,4 @@ private:
 	void construct(bool vsync, bool full);
 	void destruct(bool full);
 };
-} // namespace ve
+} // namespace vkte
