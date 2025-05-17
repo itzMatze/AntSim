@@ -23,6 +23,7 @@ void WorkContext::construct(AppState& app_state)
 		syncs.emplace_back(vmc.logical_device.get());
 		device_timers.emplace_back(vmc);
 		device_timers.back().construct(TIMER_COUNT);
+		timers.emplace_back(Timer());
 	}
 	for (vkte::Synchronization& sync : syncs) sync.construct(SEMAPHORE_COUNT, FENCE_COUNT);
 	swapchain_sync.construct(swapchain.get_framebuffer_count(), 0);
@@ -61,7 +62,7 @@ void WorkContext::draw_frame(AppState& app_state)
 		app_state.frame_time = timers[app_state.current_frame].restart() / float(frames_in_flight);
 		app_state.total_time += app_state.frame_time;
 	}
-	else timers.emplace_back(Timer());
+	else timers[app_state.current_frame].restart();
 	vk::ResultValue<uint32_t> image_idx = vmc.logical_device.get().acquireNextImageKHR(swapchain.get(), uint64_t(-1), syncs[app_state.current_frame].get_semaphore(S_IMAGE_AVAILABLE));
 	VKTE_CHECK(image_idx.result, "Failed to acquire next image!");
 	render(image_idx.value, app_state);
