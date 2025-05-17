@@ -17,16 +17,14 @@
 enum SemaphoreNames
 {
 	S_IMAGE_AVAILABLE = 0,
-	S_RENDER_FINISHED = 1,
-	S_ANTS_STEP_FINISHED = 2,
-	S_FRAME_TO_FRAME = 3,
+	S_ANTS_STEP_FINISHED = 1,
+	S_FRAME_TO_FRAME = 2,
 	SEMAPHORE_COUNT
 };
 
 enum FenceNames
 {
 	F_RENDER_FINISHED = 0,
-	F_COMPUTE_FINISHED = 1,
 	FENCE_COUNT
 };
 
@@ -49,6 +47,7 @@ private:
 	HashGrid hash_grid;
 	UI ui;
 	std::vector<vkte::Synchronization> syncs;
+	vkte::Synchronization swapchain_sync;
 	std::vector<vkte::DeviceTimer> device_timers;
 	std::vector<Timer<>> timers;
 

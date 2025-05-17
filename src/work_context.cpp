@@ -7,7 +7,7 @@
 constexpr uint32_t frames_in_flight = 2;
 
 WorkContext::WorkContext(const vkte::VulkanMainContext& vmc, vkte::VulkanCommandContext& vcc)
-	: vmc(vmc), vcc(vcc), storage(vmc, vcc), swapchain(vmc, vcc, storage), ants(vmc, storage), hash_grid(vmc, storage), ui(vmc)
+	: vmc(vmc), vcc(vcc), storage(vmc, vcc), swapchain(vmc, vcc, storage), ants(vmc, storage), hash_grid(vmc, storage), ui(vmc), swapchain_sync(vmc.logical_device.get())
 {}
 
 void WorkContext::construct(AppState& app_state)
@@ -24,7 +24,8 @@ void WorkContext::construct(AppState& app_state)
 		device_timers.emplace_back(vmc);
 		device_timers.back().construct(TIMER_COUNT);
 	}
-	for (auto& sync : syncs) sync.construct(SEMAPHORE_COUNT, FENCE_COUNT);
+	for (vkte::Synchronization& sync : syncs) sync.construct(SEMAPHORE_COUNT, FENCE_COUNT);
+	swapchain_sync.construct(swapchain.get_framebuffer_count(), 0);
 	const glm::ivec2 resolution(app_state.get_render_extent().width, app_state.get_render_extent().height);
 	ants.setup_storage(app_state);
 	hash_grid.setup_storage(app_state);
@@ -40,7 +41,8 @@ void WorkContext::construct(AppState& app_state)
 void WorkContext::destruct()
 {
 	vmc.logical_device.get().waitIdle();
-	for (auto& sync : syncs) sync.destruct();
+	for (vkte::Synchronization& sync : syncs) sync.destruct();
+	swapchain_sync.destruct();
 	for (auto& device_timer : device_timers) device_timer.destruct();
 	syncs.clear();
 	swapchain.destruct();
@@ -71,8 +73,10 @@ vk::Extent2D WorkContext::resize(bool vsync)
 {
 	vmc.logical_device.get().waitIdle();
 	swapchain.recreate(vsync);
-	for (auto& sync : syncs) sync.destruct();
-	for (auto& sync : syncs) sync.construct(SEMAPHORE_COUNT, FENCE_COUNT);
+	for (vkte::Synchronization& sync : syncs) sync.destruct();
+	for (vkte::Synchronization& sync : syncs) sync.construct(SEMAPHORE_COUNT, FENCE_COUNT);
+	swapchain_sync.destruct();
+	swapchain_sync.construct(swapchain.get_framebuffer_count(), 0);
 	return swapchain.get_extent();
 }
 
@@ -162,11 +166,11 @@ void WorkContext::render(uint32_t image_idx, AppState& app_state)
 	render_wait_stages.push_back(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 	render_wait_stages.push_back(vk::PipelineStageFlagBits::eVertexInput);
 	std::vector<vk::Semaphore> render_signal_semaphores;
-	render_signal_semaphores.push_back(syncs[app_state.current_frame].get_semaphore(S_RENDER_FINISHED));
+	render_signal_semaphores.push_back(swapchain_sync.get_semaphore(image_idx));
 	render_signal_semaphores.push_back(syncs[app_state.current_frame].get_semaphore(S_FRAME_TO_FRAME));
 	vk::SubmitInfo render_si(render_wait_semaphores.size(), render_wait_semaphores.data(), render_wait_stages.data(), 1, &vcc.graphics_cbs[app_state.current_frame], render_signal_semaphores.size(), render_signal_semaphores.data());
 	vmc.get_graphics_queue().submit(render_si, syncs[app_state.current_frame].get_fence(F_RENDER_FINISHED));
 
-	vk::PresentInfoKHR present_info(1, &syncs[app_state.current_frame].get_semaphore(S_RENDER_FINISHED), 1, &swapchain.get(), &image_idx);
+	vk::PresentInfoKHR present_info(1, &swapchain_sync.get_semaphore(image_idx), 1, &swapchain.get(), &image_idx);
 	VKTE_CHECK(vmc.get_present_queue().presentKHR(present_info), "Failed to present image!");
 }
