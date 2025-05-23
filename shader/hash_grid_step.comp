@@ -33,12 +33,12 @@ void main()
 	{
 		hash_grid[food_slot].food_amount = pc.food_amount;
 	}
-	const bool cell_inactive = hash_grid[id].food_amount == 0 && hash_grid[id].distance_to_nest_age <= 0.0 && hash_grid[id].distance_to_food_age <= 0.0;
+	const bool cell_inactive = hash_grid[id].food_amount == 0 && hash_grid[id].distance_to_nest_lifetime <= 0.0 && hash_grid[id].distance_to_food_lifetime <= 0.0;
 	if (cell_inactive) hash_grid[id].active_flags = 0u;
 	else
 	{
 		hash_grid[id].active_flags &= ~HASH_GRID_LOCKED;
-		hash_grid[id].distance_to_nest_age -= pc.frame_time;
-		hash_grid[id].distance_to_food_age -= pc.frame_time;
+		hash_grid[id].distance_to_nest_lifetime -= pc.frame_time;
+		hash_grid[id].distance_to_food_lifetime -= pc.frame_time;
 	}
 }

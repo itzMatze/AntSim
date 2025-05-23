@@ -14,9 +14,9 @@ struct HashGridCellData
 	uint active_flags = 0u;
 	uint food_amount = 0u;
 	float distance_to_nest = std::numeric_limits<float>::max();
-	float distance_to_nest_age = 0.0f;
+	float distance_to_nest_lifetime = 0.0f;
 	float distance_to_food = std::numeric_limits<float>::max();
-	float distance_to_food_age = 0.0f;
+	float distance_to_food_lifetime = 0.0f;
 };
 
 class HashGrid

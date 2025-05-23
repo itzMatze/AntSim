@@ -9,9 +9,9 @@ void clear_hash_grid_cell(uint index)
 	hash_grid[index].index = ivec2(0, 0);
 	hash_grid[index].food_amount = 0;
 	hash_grid[index].distance_to_nest = 0.0;
-	hash_grid[index].distance_to_nest_age = 0.0;
+	hash_grid[index].distance_to_nest_lifetime = 0.0;
 	hash_grid[index].distance_to_food = 0.0;
-	hash_grid[index].distance_to_food_age = 0.0;
+	hash_grid[index].distance_to_food_lifetime = 0.0;
 }
 
 // http://burtleburtle.net/bob/hash/integer.html

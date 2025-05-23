@@ -51,7 +51,7 @@ void main()
 		if (distance(ant.pos, nest.pos) < nest.radius)
 		{
 			cell.distance_to_nest = 0.0;
-			cell.distance_to_nest_age = pc.pheromone_lifetime;
+			cell.distance_to_nest_lifetime = pc.pheromone_lifetime;
 			ant.distance_to_poi = 0.0;
 		}
 		else
@@ -63,7 +63,7 @@ void main()
 			else
 			{
 				cell.distance_to_nest = ant.distance_to_poi;
-				cell.distance_to_nest_age = pc.pheromone_lifetime;
+				cell.distance_to_nest_lifetime = pc.pheromone_lifetime;
 				cell.active_flags |= HASH_GRID_DIST_TO_NEST_ACTIVE;
 			}
 		}

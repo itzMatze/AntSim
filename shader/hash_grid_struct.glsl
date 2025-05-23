@@ -9,9 +9,9 @@ struct HashGridCell
 	uint active_flags;
 	uint food_amount;
 	float distance_to_nest;
-	float distance_to_nest_age;
+	float distance_to_nest_lifetime;
 	float distance_to_food;
-	float distance_to_food_age;
+	float distance_to_food_lifetime;
 };
 
 // decimeter resolution
