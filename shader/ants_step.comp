@@ -12,7 +12,7 @@ layout(binding = 0) buffer AntBuffer {
 	Ant ants[];
 };
 
-layout(binding = 1) buffer HashGridBuffer {
+layout(binding = 1) readonly buffer HashGridBuffer {
 	HashGridCell hash_grid[];
 };
 
@@ -20,6 +20,7 @@ layout(binding = 2) readonly buffer NestBuffer {
 	Nest nest;
 };
 
+#define ANTS_ENABLE_WRITE
 #include "ants_functions.glsl"
 #include "hash_grid_functions.glsl"
 
@@ -28,7 +29,6 @@ struct PushConstants
 	uint frame_idx;
 	float frame_time;
 	float total_time;
-	float pheromone_lifetime;
 };
 
 layout(push_constant) uniform PushConstant { PushConstants pc; };
@@ -41,34 +41,8 @@ void main()
 {
 	uint thread_id = gl_GlobalInvocationID.x;
 	if (!is_valid_ant(thread_id)) return;
-	rng_state = (thread_id + ANT_COUNT * pc.frame_idx);
+	rng_state = (thread_id + ANT_COUNT * pc.frame_idx + 27349843);
 	Ant ant = ants[thread_id];
-	ivec2 hash_grid_position = get_hash_grid_pos(ant.pos);
-	int hash_grid_index = try_acquire_hash_grid_cell_index(hash_grid_position);
-	if (hash_grid_index >= 0)
-	{
-		HashGridCell cell = hash_grid[hash_grid_index];
-		if (distance(ant.pos, nest.pos) < nest.radius)
-		{
-			cell.distance_to_nest = 0.0;
-			cell.distance_to_nest_lifetime = pc.pheromone_lifetime;
-			ant.distance_to_poi = 0.0;
-		}
-		else
-		{
-			if ((cell.active_flags & HASH_GRID_DIST_TO_NEST_ACTIVE) != 0 && cell.distance_to_nest < ant.distance_to_poi - 2.0 * HASH_GRID_CELL_LENGTH)
-			{
-				ant.distance_to_poi = hash_grid[hash_grid_index].distance_to_nest;
-			}
-			else
-			{
-				cell.distance_to_nest = ant.distance_to_poi;
-				cell.distance_to_nest_lifetime = pc.pheromone_lifetime;
-				cell.active_flags |= HASH_GRID_DIST_TO_NEST_ACTIVE;
-			}
-		}
-		hash_grid[hash_grid_index] = cell;
-	}
 	// sample a new direction if ant has none or if some amount of time passed with some probability
 	const float time_to_new_step = 0.1;
 	uint prev_steps_passed = uint((pc.total_time - pc.frame_time) / time_to_new_step);
@@ -98,6 +72,23 @@ void main()
 	{
 		ant.pos.y = -100.0;
 		ant.dir.y = -ant.dir.y * 0.1;
+	}
+	ivec2 hash_grid_position = get_hash_grid_pos(ant.pos);
+	int hash_grid_index = try_acquire_hash_grid_cell_index_const(hash_grid_position);
+	if (hash_grid_index >= 0)
+	{
+		const HashGridCell cell = hash_grid[hash_grid_index];
+		if (distance(ant.pos, nest.pos) < nest.radius)
+		{
+			ant.distance_to_poi = 0.0;
+		}
+		else
+		{
+			if ((cell.distance_to_nest_lifetime > 0.0) && (cell.distance_to_nest < ant.distance_to_poi - 2.0 * HASH_GRID_CELL_LENGTH))
+			{
+				ant.distance_to_poi = hash_grid[hash_grid_index].distance_to_nest;
+			}
+		}
 	}
 	ants[thread_id] = ant;
 }

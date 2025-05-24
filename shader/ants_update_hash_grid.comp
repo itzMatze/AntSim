@@ -1,0 +1,52 @@
+#version 460
+
+#extension GL_GOOGLE_include_directive: require
+#include "ants_struct.glsl"
+#include "hash_grid_struct.glsl"
+#include "random.glsl"
+
+layout(constant_id = 0) const uint ANT_COUNT = 1;
+layout(constant_id = 1) const uint HASH_GRID_CAPACITY = 1;
+
+layout(binding = 0) readonly buffer AntBuffer {
+	Ant ants[];
+};
+
+layout(binding = 1) buffer HashGridBuffer {
+	HashGridCell hash_grid[];
+};
+
+#include "ants_functions.glsl"
+#define HASH_GRID_ENABLE_WRITE
+#include "hash_grid_functions.glsl"
+
+struct PushConstants
+{
+	uint frame_idx;
+	float frame_time;
+	float total_time;
+	float pheromone_lifetime;
+};
+
+layout(push_constant) uniform PushConstant { PushConstants pc; };
+
+layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+const float ant_speed = 0.2;
+
+void main()
+{
+	uint thread_id = gl_GlobalInvocationID.x;
+	if (!is_valid_ant(thread_id)) return;
+	rng_state = (thread_id + ANT_COUNT * pc.frame_idx + 43598763);
+	const Ant ant = ants[thread_id];
+	ivec2 hash_grid_position = get_hash_grid_pos(ant.pos);
+	int hash_grid_index = try_acquire_hash_grid_cell_index(hash_grid_position);
+	if (hash_grid_index >= 0)
+	{
+		HashGridCell cell = hash_grid[hash_grid_index];
+		cell.distance_to_nest = ant.distance_to_poi;
+		cell.distance_to_nest_lifetime = pc.pheromone_lifetime;
+		hash_grid[hash_grid_index] = cell;
+	}
+}

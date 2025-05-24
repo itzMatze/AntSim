@@ -1,7 +1,5 @@
 const uint HASH_GRID_LOCKED = 1u << 0;
 const uint HASH_GRID_ACTIVE = 1u << 1;
-const uint HASH_GRID_DIST_TO_NEST_ACTIVE = 1u << 2;
-const uint HASH_GRID_DIST_TO_FOOD_ACTIVE = 1u << 3;
 
 struct HashGridCell
 {

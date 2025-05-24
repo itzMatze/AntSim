@@ -9,6 +9,7 @@ layout(binding = 0) buffer HashGridBuffer {
 	HashGridCell hash_grid[];
 };
 
+#define HASH_GRID_ENABLE_WRITE
 #include "hash_grid_functions.glsl"
 
 layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;

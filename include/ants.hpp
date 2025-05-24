@@ -45,6 +45,7 @@ private:
 		CLEAR_PIPELINE = 0,
 		RENDER_PIPELINE = 1,
 		STEP_PIPELINE = 2,
+		UPDATE_HASH_GRID_PIPELINE = 3,
 		PIPELINE_COUNT
 	};
 
@@ -66,8 +67,15 @@ private:
 		uint32_t frame_idx;
 		float frame_time;
 		float total_time;
-		float pheromone_lifetime = 10.0f;
 	} spc;
+
+	struct UpdateHashGridPushConstants
+	{
+		uint32_t frame_idx;
+		float frame_time;
+		float total_time;
+		float pheromone_lifetime = 60.0f;
+	} uhgpc;
 
 	struct RenderPushConstants
 	{

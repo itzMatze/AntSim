@@ -3,6 +3,7 @@ bool is_valid_hash_grid(uint index)
 	return index < HASH_GRID_CAPACITY;
 }
 
+#ifdef HASH_GRID_ENABLE_WRITE
 void clear_hash_grid_cell(uint index)
 {
 	hash_grid[index].active_flags = 0;
@@ -13,6 +14,7 @@ void clear_hash_grid_cell(uint index)
 	hash_grid[index].distance_to_food = 0.0;
 	hash_grid[index].distance_to_food_lifetime = 0.0;
 }
+#endif
 
 // http://burtleburtle.net/bob/hash/integer.html
 uint hash_jenkins32(uint a)
@@ -37,6 +39,7 @@ uint get_hash_grid_slot(ivec2 index)
 	return hash % HASH_GRID_CAPACITY;
 }
 
+#ifdef HASH_GRID_ENABLE_WRITE
 int try_acquire_hash_grid_cell_index(ivec2 index)
 {
 	const int slot = int(get_hash_grid_slot(index));
@@ -57,6 +60,7 @@ int try_acquire_hash_grid_cell_index(ivec2 index)
 	}
 	return -1;
 }
+#endif
 
 int try_acquire_hash_grid_cell_index_const(ivec2 index)
 {
