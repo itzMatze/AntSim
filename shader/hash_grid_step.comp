@@ -14,7 +14,7 @@ layout(binding = 0) buffer HashGridBuffer {
 struct PushConstants
 {
 	vec2 food_pos;
-	uint food_amount;
+	int food_amount;
 	uint frame_idx;
 	float frame_time;
 	float total_time;
@@ -28,10 +28,13 @@ void main()
 {
 	const uint id = gl_GlobalInvocationID.x;
 	if (!is_valid_hash_grid(id)) return;
-	const uint food_slot = get_hash_grid_slot(get_hash_grid_pos(pc.food_pos));
+	ivec2 food_hash_grid_pos = get_hash_grid_pos(pc.food_pos);
+	const uint food_slot = get_hash_grid_slot(food_hash_grid_pos);
 	if (id == food_slot && pc.food_amount > 0)
 	{
 		hash_grid[food_slot].food_amount = pc.food_amount;
+		hash_grid[food_slot].active_flags |= HASH_GRID_ACTIVE;
+		hash_grid[food_slot].index = food_hash_grid_pos;
 	}
 	const bool cell_inactive = hash_grid[id].food_amount == 0 && hash_grid[id].distance_to_nest_lifetime <= 0.0 && hash_grid[id].distance_to_food_lifetime <= 0.0;
 	if (cell_inactive) hash_grid[id].active_flags = 0u;

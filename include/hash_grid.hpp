@@ -12,7 +12,7 @@ struct HashGridCellData
 {
 	glm::ivec2 index;
 	uint active_flags = 0u;
-	uint food_amount = 0u;
+	int food_amount = 0u;
 	float distance_to_nest = std::numeric_limits<float>::max();
 	float distance_to_nest_lifetime = 0.0f;
 	float distance_to_food = std::numeric_limits<float>::max();
@@ -59,7 +59,7 @@ private:
 	struct StepPushConstants
 	{
 		glm::vec2 food_pos;
-		uint32_t food_amount;
+		int32_t food_amount;
 		uint32_t frame_idx;
 		float frame_time;
 		float total_time;

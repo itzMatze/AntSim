@@ -1,3 +1,5 @@
+const uint ANT_HAS_FOOD = 1u << 0;
+
 struct Ant
 {
 	vec2 pos;

@@ -69,7 +69,7 @@ int try_acquire_hash_grid_cell_index_const(ivec2 index)
 	{
 		const int hash_grid_index = slot + bucket_offset;
 		uint active_flags = hash_grid[hash_grid_index].active_flags;
-		if ((active_flags & HASH_GRID_LOCKED) != 0u) return -1;
+		if ((active_flags & HASH_GRID_LOCKED) != 0u || (active_flags & HASH_GRID_ACTIVE) == 0u) return -1;
 		if (hash_grid[hash_grid_index].index == index) return hash_grid_index;
 	}
 	return -1;
@@ -78,4 +78,9 @@ int try_acquire_hash_grid_cell_index_const(ivec2 index)
 ivec2 get_hash_grid_pos(vec2 position)
 {
 	return ivec2(floor(position / HASH_GRID_CELL_LENGTH));
+}
+
+vec2 get_hash_grid_cell_pos(ivec2 hash_grid_pos)
+{
+	return vec2(hash_grid_pos) * HASH_GRID_CELL_LENGTH + HASH_GRID_CELL_LENGTH / 2.0;
 }

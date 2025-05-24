@@ -5,7 +5,7 @@ struct HashGridCell
 {
 	ivec2 index;
 	uint active_flags;
-	uint food_amount;
+	int food_amount;
 	float distance_to_nest;
 	float distance_to_nest_lifetime;
 	float distance_to_food;
@@ -13,4 +13,4 @@ struct HashGridCell
 };
 
 // decimeter resolution
-const float HASH_GRID_CELL_LENGTH = 0.1;
+const float HASH_GRID_CELL_LENGTH = 0.04;
