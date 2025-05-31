@@ -12,4 +12,5 @@ struct Nest
 {
 	vec2 pos;
 	float radius;
+	uint food_amount;
 };

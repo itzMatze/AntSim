@@ -19,6 +19,7 @@ struct NestData
 {
 	glm::vec2 pos;
 	float radius;
+	uint32_t food_amount;
 };
 
 class Ants

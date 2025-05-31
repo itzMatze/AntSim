@@ -17,7 +17,7 @@ layout(binding = 1) readonly buffer HashGridBuffer {
 	HashGridCell hash_grid[];
 };
 
-layout(binding = 2) readonly buffer NestBuffer {
+layout(binding = 2) buffer NestBuffer {
 	Nest nest;
 };
 
@@ -126,6 +126,11 @@ void main()
 		if (distance(ant.pos, nest.pos) < nest.radius)
 		{
 			ant.distance_to_poi = 0.0;
+			if ((ant.state_bits & ANT_HAS_FOOD) != 0)
+			{
+				ant.state_bits &= ~ANT_HAS_FOOD;
+				atomicAdd(nest.food_amount, 1);
+			}
 		}
 		else
 		{
