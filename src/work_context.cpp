@@ -59,7 +59,7 @@ void WorkContext::draw_frame(AppState& app_state)
 	if (app_state.total_frames > frames_in_flight)
 	{
 		for (int i = 0; i < TIMER_COUNT; i++) app_state.device_timings[i] = device_timers[app_state.current_frame].get_result_by_idx(i);
-		app_state.frame_time = timers[app_state.current_frame].restart() / float(frames_in_flight);
+		app_state.frame_time = std::min(timers[app_state.current_frame].restart() / float(frames_in_flight), 0.1f);
 		app_state.total_time += app_state.frame_time;
 	}
 	else timers[app_state.current_frame].restart();
