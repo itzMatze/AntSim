@@ -112,11 +112,15 @@ void Ants::create_pipelines(const vkte::RenderPass& render_pass, const AppState&
 		binding_description.inputRate = vk::VertexInputRate::eVertex;
 		settings.binding_descriptions = &binding_description;
 
-		std::vector<vk::VertexInputAttributeDescription> attribute_descriptions(1);
+		std::vector<vk::VertexInputAttributeDescription> attribute_descriptions(2);
 		attribute_descriptions[0].binding = 0;
 		attribute_descriptions[0].location = 0;
 		attribute_descriptions[0].format = vk::Format::eR32G32Sfloat;
 		attribute_descriptions[0].offset = offsetof(AntData, pos);
+		attribute_descriptions[1].binding = 0;
+		attribute_descriptions[1].location = 1;
+		attribute_descriptions[1].format = vk::Format::eR32Uint;
+		attribute_descriptions[1].offset = offsetof(AntData, state_bits);
 		settings.attribute_description = &attribute_descriptions;
 
 		settings.primitive_topology = vk::PrimitiveTopology::ePointList;
