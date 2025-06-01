@@ -18,7 +18,7 @@ struct AntData
 struct NestData
 {
 	glm::vec2 pos;
-	float radius;
+	int32_t level;
 	uint32_t food_amount;
 };
 

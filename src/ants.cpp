@@ -14,8 +14,8 @@ void Ants::setup_storage(AppState& app_state)
 {
 	std::vector<AntData> ants_data(app_state.ant_count);
 	buffers[ANTS_BUFFER] = storage.add_buffer("ants_buffer", ants_data, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, true, QueueFamilyFlags::Transfer | QueueFamilyFlags::Compute | QueueFamilyFlags::Graphics);
-	NestData nest{.pos = glm::vec2(0.0f, 0.0f), .radius = 0.1f, .food_amount = 0};
-	buffers[NEST_BUFFER] = storage.add_buffer("nest_buffer", &nest, 1, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eStorageBuffer, true, QueueFamilyFlags::Transfer | QueueFamilyFlags::Compute | QueueFamilyFlags::Graphics);
+	NestData nest{.pos = glm::vec2(0.0f, 0.0f), .level = 1, .food_amount = 0};
+	buffers[NEST_BUFFER] = storage.add_buffer("nest_buffer", &nest, 1, vk::BufferUsageFlagBits::eStorageBuffer, true, QueueFamilyFlags::Transfer | QueueFamilyFlags::Compute | QueueFamilyFlags::Graphics);
 }
 
 void Ants::construct(const vkte::RenderPass& render_pass, AppState& app_state)

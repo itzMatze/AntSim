@@ -3,6 +3,8 @@
 #extension GL_GOOGLE_include_directive: require
 #include "ants_struct.glsl"
 #include "hash_grid_struct.glsl"
+#include "nest_struct.glsl"
+#include "nest_functions.glsl"
 #include "random.glsl"
 #include "math.glsl"
 
@@ -123,13 +125,14 @@ void main()
 	if (hash_grid_index >= 0)
 	{
 		const HashGridCell cell = hash_grid[hash_grid_index];
-		if (distance(ant.pos, nest.pos) < nest.radius)
+		if (distance(ant.pos, nest.pos) < get_nest_radius(nest.level))
 		{
 			ant.distance_to_poi = 0.0;
 			if ((ant.state_bits & ANT_HAS_FOOD) != 0)
 			{
 				ant.state_bits &= ~ANT_HAS_FOOD;
-				atomicAdd(nest.food_amount, 1);
+				uint old_food_amount = atomicAdd(nest.food_amount, 1);
+				if (old_food_amount == (1u << nest.level)) atomicAdd(nest.level, 1);
 			}
 		}
 		else
