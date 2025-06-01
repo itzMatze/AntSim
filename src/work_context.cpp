@@ -85,6 +85,27 @@ void WorkContext::render_ui(vk::CommandBuffer& cb, AppState& app_state)
 {
 	ui.new_frame("AntSim");
 	ImGui::PushItemWidth(80.0f);
+	if (ImGui::Button("Print Debug Data"))
+	{
+		vmc.logical_device.get().waitIdle();
+		std::vector<HashGridCellData> hash_grid;
+		storage.get_buffer_by_name("hash_grid_buffer").obtain_all_data<HashGridCellData>(hash_grid);
+		std::vector<AntData> ants;
+		storage.get_buffer_by_name("ants_buffer").obtain_all_data<AntData>(ants);
+		NestData nest = storage.get_buffer_by_name("nest_buffer").obtain_first_element<NestData>();
+
+		uint32_t occupied_grid_cells = 0;
+		for (const HashGridCellData& cell : hash_grid)
+		{
+			if ((cell.active_flags & (1u << 1)) != 0) occupied_grid_cells++;
+		}
+		uint32_t carrying_ants = 0;
+		for (const AntData& ant : ants)
+		{
+			if ((ant.state_bits & (1u << 0)) != 0) carrying_ants++;
+		}
+		antlog::debug("Debug Data:\nNest\n  food: {}\nHash Grid\n  total:{}\n  occupied:{}\n  percentage:{:4f}\nAnts\n  total:{}\n  carrying:{}\n  percentage:{:4f}", nest.food_amount, hash_grid.size(), occupied_grid_cells, (float(occupied_grid_cells) / float(hash_grid.size())) * 100.0f, ants.size(), carrying_ants, (float(carrying_ants) / float(ants.size())) * 100.0f);
+	}
 
 	constexpr float update_weight = 0.1f;
 	app_state.frame_time_ema = app_state.frame_time_ema * (1 - update_weight) + app_state.frame_time * update_weight;
