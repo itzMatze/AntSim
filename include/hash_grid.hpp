@@ -6,17 +6,14 @@
 #include "vkte/descriptor_set_handler.hpp"
 #include "vkte/pipeline.hpp"
 #include "vkte/storage.hpp"
-#include <limits>
 
 struct HashGridCellData
 {
 	glm::ivec2 index;
-	uint active_flags = 0u;
 	int food_amount = 0u;
-	float distance_to_nest = std::numeric_limits<float>::max();
-	float distance_to_nest_lifetime = 0.0f;
-	float distance_to_food = std::numeric_limits<float>::max();
-	float distance_to_food_lifetime = 0.0f;
+	float pheromone_lifetime = 0.0f;
+	float pheromone_distance = 0.0;
+	uint32_t state_bits = 0u;
 };
 
 class HashGrid

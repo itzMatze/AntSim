@@ -1,15 +1,15 @@
 const uint HASH_GRID_LOCKED = 1u << 0;
 const uint HASH_GRID_ACTIVE = 1u << 1;
+const uint HASH_GRID_NEST_PHEROMONE = 1u << 2;
+const uint HASH_GRID_FOOD_PHEROMONE = 1u << 3;
 
 struct HashGridCell
 {
 	ivec2 index;
-	uint active_flags;
 	int food_amount;
-	float distance_to_nest;
-	float distance_to_nest_lifetime;
-	float distance_to_food;
-	float distance_to_food_lifetime;
+	float pheromone_lifetime;
+	float pheromone_distance;
+	uint state_bits;
 };
 
 // decimeter resolution

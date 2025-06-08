@@ -15,22 +15,32 @@ uint PCGHash(uint seed)
 	return (word >> 22u) ^ word;
 }
 
-float pcg_random_state()
+float random_float_state()
 {
 	return (float(PCGHashState()) / float(0xFFFFFFFFU));
 }
 
-float pcg_random(uint seed)
+float random_float(uint seed)
 {
 	return (float(PCGHash(seed)) / float(0xFFFFFFFFU));
 }
 
-float pcg_random_state(float min, float max)
+float random_float_state(float min, float max)
 {
-	return (pcg_random_state() * (max - min) + min);
+	return (random_float_state() * (max - min) + min);
 }
 
-float pcg_random(uint seed, float min, float max)
+float random_float(uint seed, float min, float max)
 {
-	return (pcg_random(seed) * (max - min) + min);
+	return (random_float(seed) * (max - min) + min);
+}
+
+int random_int_state(int min, int max)
+{
+	return int(random_float_state(min, max));
+}
+
+int random_int(uint seed, int min, int max)
+{
+	return int(random_float(seed, min, max));
 }

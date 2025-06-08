@@ -32,6 +32,20 @@ layout(push_constant) uniform PushConstant { PushConstants pc; };
 
 layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 
+bool time_step_passed(float time_step_length)
+{
+	// randomly shift time for each ant to decorrelate the ants behavior
+	const float total_time_shifted = pc.total_time + float(gl_GlobalInvocationID.x) / (0.271 * float(ANT_COUNT));
+	uint prev_steps_passed = uint((total_time_shifted - pc.frame_time) / time_step_length);
+	uint steps_passed = uint(total_time_shifted / time_step_length);
+	return steps_passed != prev_steps_passed;
+}
+
+bool time_step_probability(float time_step_length, float probability)
+{
+	return time_step_passed(time_step_length) && (random_float_state() < probability);
+}
+
 void main()
 {
 	uint thread_id = gl_GlobalInvocationID.x;
@@ -47,14 +61,34 @@ void main()
 		{
 			success = true;
 			HashGridCell cell = hash_grid[hash_grid_index];
-			cell.distance_to_nest = ant.distance_to_poi;
-			cell.distance_to_nest_lifetime = pc.pheromone_lifetime;
-			if (cell.food_amount > 0 && (ant.state_bits & ANT_HAS_FOOD) == 0)
+			uint new_state_bits = cell.state_bits;
+			float emit_pheromone_probability = 0.8;
+			if ((ant.state_bits & ANT_HAS_FOOD) == 0)
 			{
-				cell.food_amount--;
-				ant.state_bits |= ANT_HAS_FOOD;
+				// reduce probability if a different pheromone would be overwritten
+				if ((new_state_bits & HASH_GRID_FOOD_PHEROMONE) != 0) emit_pheromone_probability = 0.4;
+				new_state_bits |= HASH_GRID_NEST_PHEROMONE;
+				new_state_bits &= ~HASH_GRID_FOOD_PHEROMONE;
+				if (cell.food_amount > 0)
+				{
+					cell.food_amount--;
+					ant.state_bits |= ANT_HAS_FOOD;
+				}
 			}
-			cell.active_flags &= ~HASH_GRID_LOCKED;
+			else
+			{
+				// reduce probability if a different pheromone would be overwritten
+				if ((new_state_bits & HASH_GRID_NEST_PHEROMONE) != 0) emit_pheromone_probability = 0.4;
+				new_state_bits |= HASH_GRID_FOOD_PHEROMONE;
+				new_state_bits &= ~HASH_GRID_NEST_PHEROMONE;
+			}
+			if (time_step_probability(0.4, emit_pheromone_probability))
+			{
+				cell.state_bits = new_state_bits;
+				cell.pheromone_lifetime = 0.0;
+				cell.pheromone_distance = ant.distance_to_poi;
+			}
+			cell.state_bits &= ~HASH_GRID_LOCKED;
 			hash_grid[hash_grid_index] = cell;
 		}
 	}

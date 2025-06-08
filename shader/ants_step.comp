@@ -42,14 +42,16 @@ const float ant_speed = 0.2;
 
 bool time_step_passed(float time_step_length)
 {
-	uint prev_steps_passed = uint((pc.total_time - pc.frame_time) / time_step_length);
-	uint steps_passed = uint(pc.total_time / time_step_length);
+	// randomly shift time for each ant to decorrelate the ants behavior
+	const float total_time_shifted = pc.total_time + float(gl_GlobalInvocationID.x) / (0.7982 * float(ANT_COUNT));
+	uint prev_steps_passed = uint((total_time_shifted - pc.frame_time) / time_step_length);
+	uint steps_passed = uint(total_time_shifted / time_step_length);
 	return steps_passed != prev_steps_passed;
 }
 
 bool time_step_probability(float time_step_length, float probability)
 {
-	return time_step_passed(time_step_length) && (pcg_random_state() < probability);
+	return time_step_passed(time_step_length) && (random_float_state() < probability);
 }
 
 void main()
@@ -60,13 +62,13 @@ void main()
 	Ant ant = ants[thread_id];
 	// sample a new direction if ant has none or if some amount of time passed with some probability
 	const bool sample_new_direction = dot(ant.dir, ant.dir) == 0.0 || time_step_probability(0.1, 0.01);
-	if (sample_new_direction) ant.dir = vec2(pcg_random_state(-1.0, 1.0), pcg_random_state(-1.0, 1.0));
-	ant.dir += vec2(pcg_random_state(-0.01, 0.01), pcg_random_state(-0.01, 0.01));
+	if (sample_new_direction) ant.dir = vec2(random_float_state(-1.0, 1.0), random_float_state(-1.0, 1.0));
+	ant.dir += vec2(random_float_state(-0.01, 0.01), random_float_state(-0.01, 0.01));
 
 	ivec2 ant_hash_grid_position = get_hash_grid_pos(ant.pos);
 	const int cell_radius = int(0.2 / HASH_GRID_CELL_LENGTH);
 	int target_cell_index = -1;
-	float closest_to_nest_distance = FLT_MAX;
+	float closest_to_target = FLT_MAX;
 	for (int x = -cell_radius; x <= cell_radius; x++)
 	{
 		for (int y = -cell_radius; y <= cell_radius; y++)
@@ -85,14 +87,14 @@ void main()
 					target_cell_index = hash_grid_index;
 				}
 			}
-			else if (cell.distance_to_nest_lifetime > 0.0 && closest_to_nest_distance > cell.distance_to_nest && time_step_probability(0.1, 0.95))
+			else if ((cell.state_bits & HASH_GRID_NEST_PHEROMONE) != 0 && cell.pheromone_lifetime > 0.0 && closest_to_target > cell.pheromone_distance && time_step_probability(0.1, 0.95))
 			{
 				target_cell_index = hash_grid_index;
-				closest_to_nest_distance = cell.distance_to_nest;
+				closest_to_target = cell.pheromone_distance;
 			}
 		}
 	}
-	if (target_cell_index >= 0) ant.dir += pcg_random_state(0.0, 0.5) * normalize(get_hash_grid_cell_pos(hash_grid[target_cell_index].index) - ant.pos);
+	if (target_cell_index >= 0) ant.dir += random_float_state(0.0, 0.5) * normalize(get_hash_grid_cell_pos(hash_grid[target_cell_index].index) - ant.pos);
 
 	ant.dir = normalize(ant.dir) * ant_speed;
 	ant.pos += ant.dir * pc.frame_time;
@@ -137,9 +139,9 @@ void main()
 		}
 		else
 		{
-			if ((cell.distance_to_nest_lifetime > 0.0) && (cell.distance_to_nest < ant.distance_to_poi - 2.0 * HASH_GRID_CELL_LENGTH))
+			if ((cell.state_bits & HASH_GRID_NEST_PHEROMONE) != 0 && (cell.pheromone_distance < ant.distance_to_poi - 2.0 * HASH_GRID_CELL_LENGTH))
 			{
-				ant.distance_to_poi = hash_grid[hash_grid_index].distance_to_nest;
+				ant.distance_to_poi = hash_grid[hash_grid_index].pheromone_distance;
 			}
 		}
 	}

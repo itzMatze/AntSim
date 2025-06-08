@@ -97,7 +97,7 @@ void WorkContext::render_ui(vk::CommandBuffer& cb, AppState& app_state)
 		uint32_t occupied_grid_cells = 0;
 		for (const HashGridCellData& cell : hash_grid)
 		{
-			if ((cell.active_flags & (1u << 1)) != 0) occupied_grid_cells++;
+			if ((cell.state_bits & (1u << 1)) != 0) occupied_grid_cells++;
 		}
 		uint32_t carrying_ants = 0;
 		for (const AntData& ant : ants)

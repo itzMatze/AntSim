@@ -3,16 +3,21 @@ bool is_valid_hash_grid(uint index)
 	return index < HASH_GRID_CAPACITY;
 }
 
+HashGridCell get_clear_hash_grid_cell()
+{
+	HashGridCell cell;
+	cell.index = ivec2(0, 0);
+	cell.food_amount = 0;
+	cell.pheromone_lifetime = 0.0;
+	cell.pheromone_distance = 0.0;
+	cell.state_bits = 0;
+	return cell;
+}
+
 #ifdef HASH_GRID_ENABLE_WRITE
 void clear_hash_grid_cell(uint index)
 {
-	hash_grid[index].active_flags = 0;
-	hash_grid[index].index = ivec2(0, 0);
-	hash_grid[index].food_amount = 0;
-	hash_grid[index].distance_to_nest = 0.0;
-	hash_grid[index].distance_to_nest_lifetime = 0.0;
-	hash_grid[index].distance_to_food = 0.0;
-	hash_grid[index].distance_to_food_lifetime = 0.0;
+	hash_grid[index] = get_clear_hash_grid_cell();
 }
 #endif
 
@@ -46,17 +51,17 @@ int try_acquire_hash_grid_cell_index(ivec2 index)
 	for (int bucket_offset = 0; bucket_offset < 1 && slot < HASH_GRID_CAPACITY; bucket_offset++)
 	{
 		const int hash_grid_index = slot + bucket_offset;
-		const uint active_flags = hash_grid[hash_grid_index].active_flags;
-		if ((active_flags & HASH_GRID_LOCKED) != 0u) return -1;
-		if (atomicCompSwap(hash_grid[hash_grid_index].active_flags, active_flags, active_flags | HASH_GRID_LOCKED) != active_flags) return -1;
-		if ((hash_grid[hash_grid_index].active_flags & HASH_GRID_ACTIVE) == 0)
+		const uint state_bits = hash_grid[hash_grid_index].state_bits;
+		if ((state_bits & HASH_GRID_LOCKED) != 0u) return -1;
+		if (atomicCompSwap(hash_grid[hash_grid_index].state_bits, state_bits, state_bits | HASH_GRID_LOCKED) != state_bits) return -1;
+		if ((hash_grid[hash_grid_index].state_bits & HASH_GRID_ACTIVE) == 0)
 		{
-			hash_grid[hash_grid_index].active_flags = HASH_GRID_ACTIVE;
+			hash_grid[hash_grid_index].state_bits = HASH_GRID_ACTIVE;
 			hash_grid[hash_grid_index].index = index;
 			return hash_grid_index;
 		}
 		else if (hash_grid[hash_grid_index].index == index) return hash_grid_index;
-    atomicAnd(hash_grid[hash_grid_index].active_flags, ~HASH_GRID_LOCKED);
+    atomicAnd(hash_grid[hash_grid_index].state_bits, ~HASH_GRID_LOCKED);
 	}
 	return -1;
 }
@@ -68,8 +73,8 @@ int try_acquire_hash_grid_cell_index_const(ivec2 index)
 	for (int bucket_offset = 0; bucket_offset < 1 && slot < HASH_GRID_CAPACITY; bucket_offset++)
 	{
 		const int hash_grid_index = slot + bucket_offset;
-		uint active_flags = hash_grid[hash_grid_index].active_flags;
-		if ((active_flags & HASH_GRID_LOCKED) != 0u || (active_flags & HASH_GRID_ACTIVE) == 0u) return -1;
+		uint state_bits = hash_grid[hash_grid_index].state_bits;
+		if ((state_bits & HASH_GRID_LOCKED) != 0u || (state_bits & HASH_GRID_ACTIVE) == 0u) return -1;
 		if (hash_grid[hash_grid_index].index == index) return hash_grid_index;
 	}
 	return -1;
