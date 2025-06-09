@@ -72,7 +72,7 @@ void Ants::render(vk::CommandBuffer& cb, AppState& app_state, const vk::Framebuf
 	cb.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_data[RENDER_PIPELINE]->pipeline.get());
 	cb.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data[RENDER_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[RENDER_PIPELINE]->dsh.get_sets()[0], {});
 	cb.pushConstants(pipeline_data[RENDER_PIPELINE]->pipeline.get_layout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(RenderPushConstants), &rpc);
-	cb.draw(app_state.ant_count, 1, 0, 0);
+	cb.draw(6, app_state.ant_count, 0, 0);
 }
 
 void Ants::create_pipelines(const vkte::RenderPass& render_pass, const AppState& app_state)
@@ -90,26 +90,21 @@ void Ants::create_pipelines(const vkte::RenderPass& render_pass, const AppState&
 		pipeline_data[CLEAR_PIPELINE]->pipeline.construct(settings);
 	}
 	{
-		std::array<vk::SpecializationMapEntry, 1> spec_entries;
-		spec_entries[0] = vk::SpecializationMapEntry(0, 0, sizeof(uint32_t));
-		std::array<uint32_t, 1> spec_entries_data{point_size};
-		vk::SpecializationInfo spec_info(spec_entries.size(), spec_entries.data(), sizeof(uint32_t) * spec_entries_data.size(), spec_entries_data.data());
-
 		std::vector<vkte::ShaderInfo> render_shader_infos(2);
-		render_shader_infos[0] = vkte::ShaderInfo{"ants.vert", vk::ShaderStageFlagBits::eVertex, spec_info};
+		render_shader_infos[0] = vkte::ShaderInfo{"ants.vert", vk::ShaderStageFlagBits::eVertex};
 		render_shader_infos[1] = vkte::ShaderInfo{"ants.frag", vk::ShaderStageFlagBits::eFragment};
 		vkte::Pipeline::GraphicsSettings settings;
 		settings.render_pass = &render_pass;
 		settings.set_layout = &pipeline_data[RENDER_PIPELINE]->dsh.get_layout();
 		settings.shader_infos = &render_shader_infos;
-		settings.polygon_mode = vk::PolygonMode::ePoint;
+		settings.polygon_mode = vk::PolygonMode::eFill;
 		std::vector<vk::PushConstantRange> pcrs = {vk::PushConstantRange(vk::ShaderStageFlagBits::eVertex, 0, sizeof(RenderPushConstants))};
 		settings.pcrs = &pcrs;
 
 		vk::VertexInputBindingDescription binding_description{};
 		binding_description.binding = 0;
 		binding_description.stride = sizeof(AntData);
-		binding_description.inputRate = vk::VertexInputRate::eVertex;
+		binding_description.inputRate = vk::VertexInputRate::eInstance;
 		settings.binding_descriptions = &binding_description;
 
 		std::vector<vk::VertexInputAttributeDescription> attribute_descriptions(2);
@@ -123,7 +118,7 @@ void Ants::create_pipelines(const vkte::RenderPass& render_pass, const AppState&
 		attribute_descriptions[1].offset = offsetof(AntData, state_bits);
 		settings.attribute_description = &attribute_descriptions;
 
-		settings.primitive_topology = vk::PrimitiveTopology::ePointList;
+		settings.primitive_topology = vk::PrimitiveTopology::eTriangleList;
 		pipeline_data[RENDER_PIPELINE]->pipeline.construct(settings);
 	}
 	{

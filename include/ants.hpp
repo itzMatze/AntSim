@@ -61,8 +61,6 @@ private:
 	std::array<int32_t, BUFFER_COUNT> buffers;
 	std::array<std::unique_ptr<PipelineData>, PIPELINE_COUNT> pipeline_data;
 
-	uint32_t point_size = 2;
-
 	struct StepPushConstants
 	{
 		uint32_t frame_idx;
