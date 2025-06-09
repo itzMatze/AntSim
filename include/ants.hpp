@@ -11,6 +11,7 @@ struct AntData
 {
 	glm::vec2 pos;
 	glm::vec2 dir;
+	glm::vec2 target;
 	float distance_to_poi;
 	uint32_t state_bits;
 };

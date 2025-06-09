@@ -102,7 +102,7 @@ void WorkContext::render_ui(vk::CommandBuffer& cb, AppState& app_state)
 		uint32_t carrying_ants = 0;
 		for (const AntData& ant : ants)
 		{
-			if ((ant.state_bits & (1u << 0)) != 0) carrying_ants++;
+			if ((ant.state_bits & (1u << 3)) != 0) carrying_ants++;
 		}
 		antlog::debug("Debug Data:\nNest\n  food: {}\nHash Grid\n  total:{}\n  occupied:{}\n  percentage:{:4f}\nAnts\n  total:{}\n  carrying:{}\n  percentage:{:4f}", nest.food_amount, hash_grid.size(), occupied_grid_cells, (float(occupied_grid_cells) / float(hash_grid.size())) * 100.0f, ants.size(), carrying_ants, (float(carrying_ants) / float(ants.size())) * 100.0f);
 	}

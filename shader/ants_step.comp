@@ -39,6 +39,7 @@ layout(push_constant) uniform PushConstant { PushConstants pc; };
 layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 
 const float ant_speed = 0.2;
+const float ant_search_radius = 0.2;
 
 bool time_step_passed(float time_step_length)
 {
@@ -60,15 +61,15 @@ void main()
 	if (!is_valid_ant(thread_id)) return;
 	rng_state = (thread_id + ANT_COUNT * pc.frame_idx + 27349843);
 	Ant ant = ants[thread_id];
-	// sample a new direction if ant has none or if some amount of time passed with some probability
-	const bool sample_new_direction = dot(ant.dir, ant.dir) == 0.0 || time_step_probability(0.1, 0.01);
-	if (sample_new_direction) ant.dir = vec2(random_float_state(-1.0, 1.0), random_float_state(-1.0, 1.0));
-	ant.dir += vec2(random_float_state(-0.01, 0.01), random_float_state(-0.01, 0.01));
+	// sample a new target if some amount of time passed with some probability
+	if (time_step_probability(0.1, 0.05)) ant.state_bits &= ~ANT_TARGET_PRIORITY_MASK;
 
 	ivec2 ant_hash_grid_position = get_hash_grid_pos(ant.pos);
-	const int cell_radius = int(0.2 / HASH_GRID_CELL_LENGTH);
+	const int cell_radius = int(ant_search_radius / HASH_GRID_CELL_LENGTH);
 	int target_cell_index = -1;
-	float closest_to_target = FLT_MAX;
+	float closest_to_dst = FLT_MAX;
+	uint min_target_priority = ant.state_bits & ANT_TARGET_PRIORITY_MASK;
+	uint new_target_priority;
 	for (int x = -cell_radius; x <= cell_radius; x++)
 	{
 		for (int y = -cell_radius; y <= cell_radius; y++)
@@ -82,24 +83,66 @@ void main()
 			// move ant towards food if it doesn't carry any yet
 			if ((ant.state_bits & ANT_HAS_FOOD) == 0)
 			{
-				if (cell.food_amount > 0 && time_step_probability(0.1, 0.95))
+				if (cell.food_amount > 0 && time_step_probability(0.1, 0.95) && min_target_priority < ANT_TARGET_FOOD_NEST_PRIORITY)
 				{
 					target_cell_index = hash_grid_index;
+					closest_to_dst = 0;
+					min_target_priority = ANT_TARGET_FOOD_NEST_PRIORITY - 1;
+					new_target_priority = ANT_TARGET_FOOD_NEST_PRIORITY;
 				}
-				else if ((cell.state_bits & HASH_GRID_FOOD_PHEROMONE) != 0 && closest_to_target > cell.pheromone_distance && time_step_probability(0.1, 0.95))
+				else if ((cell.state_bits & HASH_GRID_FOOD_PHEROMONE) != 0 && closest_to_dst > cell.pheromone_distance && (min_target_priority < ANT_TARGET_PHEROMONE_PRIORITY))
 				{
 					target_cell_index = hash_grid_index;
-					closest_to_target = cell.pheromone_distance;
+					closest_to_dst = cell.pheromone_distance;
+					min_target_priority = ANT_TARGET_PHEROMONE_PRIORITY - 1;
+					new_target_priority = ANT_TARGET_PHEROMONE_PRIORITY;
 				}
 			}
-			else if ((cell.state_bits & HASH_GRID_NEST_PHEROMONE) != 0 && closest_to_target > cell.pheromone_distance && time_step_probability(0.1, 0.95))
+			else
 			{
-				target_cell_index = hash_grid_index;
-				closest_to_target = cell.pheromone_distance;
+				float nest_distance = distance(get_hash_grid_pos(cell.index), nest.pos);
+				if (nest_distance < get_nest_radius(nest.level) && min_target_priority < ANT_TARGET_FOOD_NEST_PRIORITY)
+				{
+					target_cell_index = hash_grid_index;
+					closest_to_dst = nest_distance;
+					min_target_priority = ANT_TARGET_FOOD_NEST_PRIORITY - 1;
+					new_target_priority = ANT_TARGET_FOOD_NEST_PRIORITY;
+				}
+				else if ((cell.state_bits & HASH_GRID_NEST_PHEROMONE) != 0 && closest_to_dst > cell.pheromone_distance && (min_target_priority < ANT_TARGET_PHEROMONE_PRIORITY))
+				{
+					target_cell_index = hash_grid_index;
+					closest_to_dst = cell.pheromone_distance;
+					min_target_priority = ANT_TARGET_PHEROMONE_PRIORITY - 1;
+					new_target_priority = ANT_TARGET_PHEROMONE_PRIORITY;
+				}
 			}
 		}
 	}
-	if (target_cell_index >= 0) ant.dir += random_float_state(0.0, 0.5) * normalize(get_hash_grid_cell_pos(hash_grid[target_cell_index].index) - ant.pos);
+	if (target_cell_index >= 0)
+	{
+		ant_set_target_priority(ant.state_bits, new_target_priority);
+		ant.target = get_hash_grid_cell_pos(hash_grid[target_cell_index].index);
+	}
+
+	// sample new target if ant has none
+	if ((ant.state_bits & ANT_TARGET_PRIORITY_MASK) == 0u)
+	{
+		ant.target = ant.pos + vec2(random_float_state(-ant_search_radius, ant_search_radius), random_float_state(-ant_search_radius, ant_search_radius));
+		ant_set_target_priority(ant.state_bits, ANT_TARGET_NO_PRIORITY);
+	}
+	// pick new target in move direction of ant if it has reached its previous target
+	if (distance(ant.pos, ant.target) < (HASH_GRID_CELL_LENGTH / 2.0))
+	{
+		const float max_angle = radians(10.0);
+		const float angle = random_float_state(-max_angle, max_angle);
+		const vec2 norm_ant_dir = normalize(ant.dir);
+		const vec2 dir = vec2(norm_ant_dir.x * cos(angle) - norm_ant_dir.y * sin(angle), norm_ant_dir.x * sin(angle) + norm_ant_dir.y * cos(angle));
+		const float dist = random_float_state(ant_search_radius / 2.0, ant_search_radius);
+		ant.target = ant.pos + dir * dist;
+		ant_set_target_priority(ant.state_bits, ANT_TARGET_NO_PRIORITY);
+	}
+	ant.dir = ant.target - ant.pos;
+	ant.dir += vec2(random_float_state(-0.01, 0.01), random_float_state(-0.01, 0.01));
 
 	ant.dir = normalize(ant.dir) * ant_speed;
 	ant.pos += ant.dir * pc.frame_time;
@@ -132,12 +175,14 @@ void main()
 	if (hash_grid_index >= 0)
 	{
 		const HashGridCell cell = hash_grid[hash_grid_index];
-		if (distance(ant.pos, nest.pos) < get_nest_radius(nest.level))
+		float ant_nest_distance = distance(ant.pos, nest.pos);
+		if (ant_nest_distance < get_nest_radius(nest.level))
 		{
-			ant.distance_to_poi = 0.0;
+			ant.distance_to_poi = ant_nest_distance;
 			if ((ant.state_bits & ANT_HAS_FOOD) != 0)
 			{
 				ant.state_bits &= ~ANT_HAS_FOOD;
+				ant.state_bits &= ~ANT_TARGET_PRIORITY_MASK;
 				uint old_food_amount = atomicAdd(nest.food_amount, 1);
 				if (old_food_amount == (1u << nest.level)) atomicAdd(nest.level, 1);
 			}

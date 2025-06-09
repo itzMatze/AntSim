@@ -66,20 +66,22 @@ void main()
 			if ((ant.state_bits & ANT_HAS_FOOD) == 0)
 			{
 				// reduce probability if a different pheromone would be overwritten
-				if ((new_state_bits & HASH_GRID_FOOD_PHEROMONE) != 0) emit_pheromone_probability = 0.2;
+				if ((new_state_bits & HASH_GRID_FOOD_PHEROMONE) != 0) emit_pheromone_probability = 0.6;
 				new_state_bits |= HASH_GRID_NEST_PHEROMONE;
 				new_state_bits &= ~HASH_GRID_FOOD_PHEROMONE;
 				if (cell.food_amount > 0)
 				{
 					cell.food_amount--;
 					ant.state_bits |= ANT_HAS_FOOD;
+					ant.state_bits &= ~ANT_TARGET_PRIORITY_MASK;
 					ant.distance_to_poi = 0.0;
+					emit_pheromone_probability = 0.0;
 				}
 			}
 			else
 			{
 				// reduce probability if a different pheromone would be overwritten
-				if ((new_state_bits & HASH_GRID_NEST_PHEROMONE) != 0) emit_pheromone_probability = 0.2;
+				if ((new_state_bits & HASH_GRID_NEST_PHEROMONE) != 0) emit_pheromone_probability = 0.6;
 				new_state_bits |= HASH_GRID_FOOD_PHEROMONE;
 				new_state_bits &= ~HASH_GRID_NEST_PHEROMONE;
 			}
