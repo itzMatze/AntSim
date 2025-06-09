@@ -65,16 +65,21 @@ int try_acquire_hash_grid_cell_index(ivec2 index)
 	}
 	return -1;
 }
+
+void unlock_hash_grid_cell(int index)
+{
+	atomicAnd(hash_grid[index].state_bits, ~HASH_GRID_LOCKED);
+}
 #endif
 
-int try_acquire_hash_grid_cell_index_const(ivec2 index)
+int get_hash_grid_cell_index_const(ivec2 index)
 {
 	const int slot = int(get_hash_grid_slot(index));
 	for (int bucket_offset = 0; bucket_offset < 1 && slot < HASH_GRID_CAPACITY; bucket_offset++)
 	{
 		const int hash_grid_index = slot + bucket_offset;
 		uint state_bits = hash_grid[hash_grid_index].state_bits;
-		if ((state_bits & HASH_GRID_LOCKED) != 0u || (state_bits & HASH_GRID_ACTIVE) == 0u) return -1;
+		if ((state_bits & HASH_GRID_ACTIVE) == 0u) return -1;
 		if (hash_grid[hash_grid_index].index == index) return hash_grid_index;
 	}
 	return -1;

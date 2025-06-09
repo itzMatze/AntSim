@@ -89,8 +89,8 @@ void main()
 				cell.pheromone_lifetime = 0.0;
 				cell.pheromone_distance = ant.distance_to_poi;
 			}
-			cell.state_bits &= ~HASH_GRID_LOCKED;
 			hash_grid[hash_grid_index] = cell;
+			unlock_hash_grid_cell(hash_grid_index);
 		}
 	}
 	ants[thread_id] = ant;

@@ -76,7 +76,7 @@ void main()
 			// skip the cell in which the ant currently is
 			if (x == 0 && y == 0) continue;
 			ivec2 hash_grid_position = ant_hash_grid_position + ivec2(x, y);
-			int hash_grid_index = try_acquire_hash_grid_cell_index_const(hash_grid_position);
+			int hash_grid_index = get_hash_grid_cell_index_const(hash_grid_position);
 			if (hash_grid_index < 0) continue;
 			const HashGridCell cell = hash_grid[hash_grid_index];
 			// move ant towards food if it doesn't carry any yet
@@ -128,7 +128,7 @@ void main()
 	}
 
 	ivec2 hash_grid_position = get_hash_grid_pos(ant.pos);
-	int hash_grid_index = try_acquire_hash_grid_cell_index_const(hash_grid_position);
+	int hash_grid_index = get_hash_grid_cell_index_const(hash_grid_position);
 	if (hash_grid_index >= 0)
 	{
 		const HashGridCell cell = hash_grid[hash_grid_index];

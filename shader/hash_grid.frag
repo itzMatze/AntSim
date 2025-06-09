@@ -40,7 +40,7 @@ void main()
 		out_color = vec4(0.0, 1.0, 0.0, 1.0);
 		return;
 	}
-	int hash_grid_index = try_acquire_hash_grid_cell_index_const(hash_grid_pos);
+	int hash_grid_index = get_hash_grid_cell_index_const(hash_grid_pos);
 	if (hash_grid_index >= 0)
 	{
 		HashGridCell cell = hash_grid[hash_grid_index];
