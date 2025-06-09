@@ -86,8 +86,13 @@ void main()
 				{
 					target_cell_index = hash_grid_index;
 				}
+				else if ((cell.state_bits & HASH_GRID_FOOD_PHEROMONE) != 0 && closest_to_target > cell.pheromone_distance && time_step_probability(0.1, 0.95))
+				{
+					target_cell_index = hash_grid_index;
+					closest_to_target = cell.pheromone_distance;
+				}
 			}
-			else if ((cell.state_bits & HASH_GRID_NEST_PHEROMONE) != 0 && cell.pheromone_lifetime > 0.0 && closest_to_target > cell.pheromone_distance && time_step_probability(0.1, 0.95))
+			else if ((cell.state_bits & HASH_GRID_NEST_PHEROMONE) != 0 && closest_to_target > cell.pheromone_distance && time_step_probability(0.1, 0.95))
 			{
 				target_cell_index = hash_grid_index;
 				closest_to_target = cell.pheromone_distance;
@@ -139,10 +144,9 @@ void main()
 		}
 		else
 		{
-			if ((cell.state_bits & HASH_GRID_NEST_PHEROMONE) != 0 && (cell.pheromone_distance < ant.distance_to_poi - 2.0 * HASH_GRID_CELL_LENGTH))
-			{
-				ant.distance_to_poi = hash_grid[hash_grid_index].pheromone_distance;
-			}
+			const bool pheromone_match = (ant.state_bits & ANT_HAS_FOOD) == 0 && (cell.state_bits & HASH_GRID_NEST_PHEROMONE) != 0 || (ant.state_bits & ANT_HAS_FOOD) != 0 && (cell.state_bits & HASH_GRID_FOOD_PHEROMONE) != 0;
+			const bool update_ant_distance = pheromone_match && (cell.pheromone_distance < ant.distance_to_poi - 2.0 * HASH_GRID_CELL_LENGTH);
+			if (update_ant_distance) ant.distance_to_poi = hash_grid[hash_grid_index].pheromone_distance;
 		}
 	}
 	ants[thread_id] = ant;
