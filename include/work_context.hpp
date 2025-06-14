@@ -39,6 +39,17 @@ public:
 	vk::Extent2D resize(bool vsync);
 
 private:
+	static constexpr uint32_t frames_in_flight = 2;
+
+	struct UniformBufferData
+	{
+		glm::vec2 range_min;
+		glm::vec2 range_max;
+		uint frame_idx;
+		float frame_time;
+		float total_time;
+	} uniform_buffer_data;
+
 	const vkte::VulkanMainContext& vmc;
 	vkte::VulkanCommandContext& vcc;
 	vkte::Storage storage;
@@ -49,7 +60,8 @@ private:
 	std::vector<vkte::Synchronization> syncs;
 	vkte::Synchronization swapchain_sync;
 	std::vector<vkte::DeviceTimer> device_timers;
-	std::vector<Timer<>> timers;
+	std::array<Timer<>, frames_in_flight> timers;
+	std::array<uint32_t, frames_in_flight> uniform_buffers;
 
 	void render_ui(vk::CommandBuffer& cb, AppState& app_state);
 	void render(uint32_t image_idx, AppState& app_state);

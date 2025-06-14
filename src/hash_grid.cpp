@@ -4,11 +4,7 @@
 #include <vulkan/vulkan_handles.hpp>
 
 HashGrid::HashGrid(const vkte::VulkanMainContext& vmc, vkte::Storage& storage) : vmc(vmc), storage(storage)
-{
-	pipeline_data[CLEAR_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, 1)});
-	pipeline_data[RENDER_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, 1)});
-	pipeline_data[STEP_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, 1)});
-}
+{}
 
 void HashGrid::setup_storage(AppState& app_state)
 {
@@ -16,9 +12,12 @@ void HashGrid::setup_storage(AppState& app_state)
 	buffers[HASH_GRID_BUFFER] = storage.add_buffer("hash_grid_buffer", hash_grid_data, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferSrc, true, QueueFamilyFlags::Transfer | QueueFamilyFlags::Compute | QueueFamilyFlags::Graphics);
 }
 
-void HashGrid::construct(const vkte::RenderPass& render_pass, AppState& app_state)
+void HashGrid::construct(const vkte::RenderPass& render_pass, AppState& app_state, uint32_t frames_in_flight)
 {
-	create_descriptor_set();
+	pipeline_data[CLEAR_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, frames_in_flight)});
+	pipeline_data[RENDER_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, frames_in_flight)});
+	pipeline_data[STEP_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, frames_in_flight)});
+	create_descriptor_set(frames_in_flight);
 	create_pipelines(render_pass, app_state);
 }
 
@@ -29,13 +28,14 @@ void HashGrid::destruct()
 	{
 		pipeline_datum->pipeline.destruct();
 		pipeline_datum->dsh.destruct();
+		pipeline_datum = nullptr;
 	}
 }
 
 void HashGrid::clear(vk::CommandBuffer& cb, AppState& app_state)
 {
 	cb.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline_data[CLEAR_PIPELINE]->pipeline.get());
-	cb.bindDescriptorSets(vk::PipelineBindPoint::eCompute, pipeline_data[CLEAR_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[CLEAR_PIPELINE]->dsh.get_sets()[0], {});
+	cb.bindDescriptorSets(vk::PipelineBindPoint::eCompute, pipeline_data[CLEAR_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[CLEAR_PIPELINE]->dsh.get_sets()[app_state.current_frame], {});
 	cb.dispatch((app_state.hash_grid_capacity + 31) / 32, 1, 1);
 }
 
@@ -43,22 +43,16 @@ void HashGrid::compute(vk::CommandBuffer& cb, AppState& app_state)
 {
 	spc.food_pos = app_state.add_food_pos;
 	spc.food_amount = app_state.add_food_amount;
-	spc.frame_idx = app_state.total_frames;
-	spc.frame_time = app_state.frame_time;
-	spc.total_time = app_state.total_time;
 	cb.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get());
-	cb.bindDescriptorSets(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[STEP_PIPELINE]->dsh.get_sets()[0], {});
+	cb.bindDescriptorSets(vk::PipelineBindPoint::eCompute, pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[STEP_PIPELINE]->dsh.get_sets()[app_state.current_frame], {});
 	cb.pushConstants(pipeline_data[STEP_PIPELINE]->pipeline.get_layout(), vk::ShaderStageFlagBits::eCompute, 0, sizeof(StepPushConstants), &spc);
 	cb.dispatch((app_state.hash_grid_capacity + 31) / 32, 1, 1);
 }
 
 void HashGrid::render(vk::CommandBuffer& cb, AppState& app_state, const vk::Framebuffer& framebuffer, const vk::RenderPass& render_pass)
 {
-	rpc.range_min = app_state.visible_range_min;
-	rpc.range_max = app_state.visible_range_max;
 	cb.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_data[RENDER_PIPELINE]->pipeline.get());
-	cb.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data[RENDER_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[RENDER_PIPELINE]->dsh.get_sets()[0], {});
-	cb.pushConstants(pipeline_data[RENDER_PIPELINE]->pipeline.get_layout(), vk::ShaderStageFlagBits::eFragment, 0, sizeof(RenderPushConstants), &rpc);
+	cb.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data[RENDER_PIPELINE]->pipeline.get_layout(), 0, pipeline_data[RENDER_PIPELINE]->dsh.get_sets()[app_state.current_frame], {});
 	cb.draw(3, 1, 0, 0);
 }
 
@@ -73,7 +67,7 @@ void HashGrid::create_pipelines(const vkte::RenderPass& render_pass, const AppSt
 		vkte::Pipeline::ComputeSettings settings;
 		settings.set_layout = &pipeline_data[CLEAR_PIPELINE]->dsh.get_layout();
 		settings.shader_info = &clear_hash_grid_shader_info;
-		settings.push_constant_byte_size = sizeof(StepPushConstants);
+		settings.push_constant_byte_size = 0;
 		pipeline_data[CLEAR_PIPELINE]->pipeline.construct(settings);
 	}
 	{
@@ -90,8 +84,6 @@ void HashGrid::create_pipelines(const vkte::RenderPass& render_pass, const AppSt
 		settings.polygon_mode = vk::PolygonMode::eFill;
 		settings.primitive_topology = vk::PrimitiveTopology::eTriangleList;
 		settings.shader_infos = &render_shader_infos;
-		std::vector<vk::PushConstantRange> pcrs = {vk::PushConstantRange(vk::ShaderStageFlagBits::eFragment, 0, sizeof(RenderPushConstants))};
-		settings.pcrs = &pcrs;
 		pipeline_data[RENDER_PIPELINE]->pipeline.construct(settings);
 	}
 	{
@@ -108,15 +100,22 @@ void HashGrid::create_pipelines(const vkte::RenderPass& render_pass, const AppSt
 	}
 }
 
-void HashGrid::create_descriptor_set()
+void HashGrid::create_descriptor_set(uint32_t frames_in_flight)
 {
 	pipeline_data[STEP_PIPELINE]->dsh.add_binding(0, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
+	pipeline_data[STEP_PIPELINE]->dsh.add_binding(99, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eCompute);
 	pipeline_data[CLEAR_PIPELINE]->dsh.add_binding(0, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
 	pipeline_data[RENDER_PIPELINE]->dsh.add_binding(0, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment);
 	pipeline_data[RENDER_PIPELINE]->dsh.add_binding(1, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment);
-	pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(0, 0, storage.get_buffer(buffers[HASH_GRID_BUFFER]));
-	pipeline_data[CLEAR_PIPELINE]->dsh.add_descriptor(0, 0, storage.get_buffer(buffers[HASH_GRID_BUFFER]));
-	pipeline_data[RENDER_PIPELINE]->dsh.add_descriptor(0, 0, storage.get_buffer(buffers[HASH_GRID_BUFFER]));
-	pipeline_data[RENDER_PIPELINE]->dsh.add_descriptor(0, 1, storage.get_buffer_by_name("nest_buffer"));
+	pipeline_data[RENDER_PIPELINE]->dsh.add_binding(99, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eFragment);
+	for (uint32_t i = 0; i < frames_in_flight; ++i)
+	{
+		pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(i, 0, storage.get_buffer(buffers[HASH_GRID_BUFFER]));
+		pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(i, 99, storage.get_buffer_by_name("uniform_buffer_" + std::to_string(i)));
+		pipeline_data[CLEAR_PIPELINE]->dsh.add_descriptor(i, 0, storage.get_buffer(buffers[HASH_GRID_BUFFER]));
+		pipeline_data[RENDER_PIPELINE]->dsh.add_descriptor(i, 0, storage.get_buffer(buffers[HASH_GRID_BUFFER]));
+		pipeline_data[RENDER_PIPELINE]->dsh.add_descriptor(i, 1, storage.get_buffer_by_name("nest_buffer"));
+		pipeline_data[RENDER_PIPELINE]->dsh.add_descriptor(i, 99, storage.get_buffer_by_name("uniform_buffer_" + std::to_string(i)));
+	}
 	for (std::unique_ptr<PipelineData>& pipeline_datum : pipeline_data) pipeline_datum->dsh.construct();
 }

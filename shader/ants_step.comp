@@ -1,6 +1,7 @@
 #version 460
 
 #extension GL_GOOGLE_include_directive: require
+#include "uniform_buffer_struct.glsl"
 #include "ants_struct.glsl"
 #include "hash_grid_struct.glsl"
 #include "nest_struct.glsl"
@@ -23,18 +24,13 @@ layout(binding = 2) buffer NestBuffer {
 	Nest nest;
 };
 
+layout(binding = 99) uniform UniformBuffer {
+	UniformBufferData ub;
+};
+
 #define ANTS_ENABLE_WRITE
 #include "ants_functions.glsl"
 #include "hash_grid_functions.glsl"
-
-struct PushConstants
-{
-	uint frame_idx;
-	float frame_time;
-	float total_time;
-};
-
-layout(push_constant) uniform PushConstant { PushConstants pc; };
 
 layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 
@@ -44,8 +40,8 @@ const float ant_search_radius = 0.2;
 bool time_step_passed(float time_step_length)
 {
 	// randomly shift time for each ant to decorrelate the ants behavior
-	const float total_time_shifted = pc.total_time + float(gl_GlobalInvocationID.x) / (0.7982 * float(ANT_COUNT));
-	uint prev_steps_passed = uint((total_time_shifted - pc.frame_time) / time_step_length);
+	const float total_time_shifted = ub.total_time + float(gl_GlobalInvocationID.x) / (0.7982 * float(ANT_COUNT));
+	uint prev_steps_passed = uint((total_time_shifted - ub.frame_time) / time_step_length);
 	uint steps_passed = uint(total_time_shifted / time_step_length);
 	return steps_passed != prev_steps_passed;
 }
@@ -59,7 +55,7 @@ void main()
 {
 	uint thread_id = gl_GlobalInvocationID.x;
 	if (!is_valid_ant(thread_id)) return;
-	rng_state = (thread_id + ANT_COUNT * pc.frame_idx + 27349843);
+	rng_state = (thread_id + ANT_COUNT * ub.frame_idx + 27349843);
 	Ant ant = ants[thread_id];
 	// sample a new target if some amount of time passed with some probability
 	if (time_step_probability(0.1, 0.05)) ant.state_bits &= ~ANT_TARGET_PRIORITY_MASK;
@@ -145,8 +141,8 @@ void main()
 	ant.dir += vec2(random_float_state(-0.01, 0.01), random_float_state(-0.01, 0.01));
 
 	ant.dir = normalize(ant.dir) * ant_speed;
-	ant.pos += ant.dir * pc.frame_time;
-	ant.distance_to_poi += ant_speed * pc.frame_time;
+	ant.pos += ant.dir * ub.frame_time;
+	ant.distance_to_poi += ant_speed * ub.frame_time;
 
 	// prevent ants from running too far away
 	if (ant.pos.x > 100.0)

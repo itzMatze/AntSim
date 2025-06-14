@@ -1,6 +1,7 @@
 #version 460
 
 #extension GL_GOOGLE_include_directive: require
+#include "uniform_buffer_struct.glsl"
 #include "hash_grid_struct.glsl"
 
 layout(constant_id = 0) const uint HASH_GRID_CAPACITY = 1;
@@ -9,15 +10,16 @@ layout(binding = 0) buffer HashGridBuffer {
 	HashGridCell hash_grid[];
 };
 
+layout(binding = 99) uniform UniformBuffer {
+	UniformBufferData ub;
+};
+
 #include "hash_grid_functions.glsl"
 
 struct PushConstants
 {
 	vec2 food_pos;
 	int food_amount;
-	uint frame_idx;
-	float frame_time;
-	float total_time;
 };
 
 layout(push_constant) uniform PushConstant { PushConstants pc; };
@@ -41,6 +43,6 @@ void main()
 	else
 	{
 		hash_grid[id].state_bits &= ~HASH_GRID_LOCKED;
-		hash_grid[id].pheromone_lifetime += pc.frame_time;
+		hash_grid[id].pheromone_lifetime += ub.frame_time;
 	}
 }

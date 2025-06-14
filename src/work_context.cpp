@@ -4,8 +4,6 @@
 #include "antlog.hpp"
 #include "imgui.h"
 
-constexpr uint32_t frames_in_flight = 2;
-
 WorkContext::WorkContext(const vkte::VulkanMainContext& vmc, vkte::VulkanCommandContext& vcc)
 	: vmc(vmc), vcc(vcc), storage(vmc, vcc), swapchain(vmc, vcc, storage), ants(vmc, storage), hash_grid(vmc, storage), ui(vmc), swapchain_sync(vmc.logical_device.get())
 {}
@@ -23,15 +21,17 @@ void WorkContext::construct(AppState& app_state)
 		syncs.emplace_back(vmc.logical_device.get());
 		device_timers.emplace_back(vmc);
 		device_timers.back().construct(TIMER_COUNT);
-		timers.emplace_back(Timer());
 	}
 	for (vkte::Synchronization& sync : syncs) sync.construct(SEMAPHORE_COUNT, FENCE_COUNT);
 	swapchain_sync.construct(swapchain.get_framebuffer_count(), 0);
-	const glm::ivec2 resolution(app_state.get_render_extent().width, app_state.get_render_extent().height);
+	for (uint32_t i = 0; i < frames_in_flight; ++i)
+	{
+		uniform_buffers[i] = storage.add_buffer("uniform_buffer_" + std::to_string(i), &uniform_buffer_data, 1, vk::BufferUsageFlagBits::eUniformBuffer, false, QueueFamilyFlags::Graphics | QueueFamilyFlags::Compute);
+	}
 	ants.setup_storage(app_state);
 	hash_grid.setup_storage(app_state);
-	ants.construct(swapchain.get_render_pass(), app_state);
-	hash_grid.construct(swapchain.get_render_pass(), app_state);
+	ants.construct(swapchain.get_render_pass(), app_state, frames_in_flight);
+	hash_grid.construct(swapchain.get_render_pass(), app_state, frames_in_flight);
 	ui.construct(vcc, swapchain.get_render_pass(), frames_in_flight);
 	vk::CommandBuffer& cb = vcc.get_one_time_compute_buffer();
 	ants.clear(cb, app_state);
@@ -42,6 +42,7 @@ void WorkContext::construct(AppState& app_state)
 void WorkContext::destruct()
 {
 	vmc.logical_device.get().waitIdle();
+	for (uint32_t i : uniform_buffers) storage.destroy_buffer(i);
 	for (vkte::Synchronization& sync : syncs) sync.destruct();
 	swapchain_sync.destruct();
 	for (auto& device_timer : device_timers) device_timer.destruct();
@@ -63,6 +64,12 @@ void WorkContext::draw_frame(AppState& app_state)
 		app_state.total_time += app_state.frame_time;
 	}
 	else timers[app_state.current_frame].restart();
+	uniform_buffer_data.range_min = app_state.visible_range_min;
+	uniform_buffer_data.range_max = app_state.visible_range_max;
+	uniform_buffer_data.frame_idx = app_state.total_time;
+	uniform_buffer_data.frame_time = app_state.frame_time;
+	uniform_buffer_data.total_time = app_state.total_time;
+	storage.get_buffer(uniform_buffers[app_state.current_frame]).update_data(uniform_buffer_data);
 	vk::ResultValue<uint32_t> image_idx = vmc.logical_device.get().acquireNextImageKHR(swapchain.get(), uint64_t(-1), syncs[app_state.current_frame].get_semaphore(S_IMAGE_AVAILABLE));
 	VKTE_CHECK(image_idx.result, "Failed to acquire next image!");
 	render(image_idx.value, app_state);

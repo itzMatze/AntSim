@@ -5,6 +5,7 @@ layout(location = 0) in vec2 frag_tex;
 layout(location = 0) out vec4 out_color;
 
 #extension GL_GOOGLE_include_directive: require
+#include "uniform_buffer_struct.glsl"
 #include "colormaps.glsl"
 #include "hash_grid_struct.glsl"
 #include "ants_struct.glsl"
@@ -21,19 +22,15 @@ layout(binding = 1) buffer NestBuffer {
 	Nest nest;
 };
 
-#include "hash_grid_functions.glsl"
-
-struct PushConstants
-{
-	vec2 range_min;
-	vec2 range_max;
+layout(binding = 99) uniform UniformBuffer {
+	UniformBufferData ub;
 };
 
-layout(push_constant) uniform PushConstant { PushConstants pc; };
+#include "hash_grid_functions.glsl"
 
 void main()
 {
-	vec2 pos = frag_tex * (pc.range_max - pc.range_min) + pc.range_min;
+	vec2 pos = frag_tex * (ub.range_max - ub.range_min) + ub.range_min;
 	ivec2 hash_grid_pos = get_hash_grid_pos(pos);
 	if (distance(pos, nest.pos) < get_nest_radius(nest.level))
 	{

@@ -21,7 +21,7 @@ class HashGrid
 public:
 	HashGrid(const vkte::VulkanMainContext& vmc, vkte::Storage& storage);
 	void setup_storage(AppState& app_state);
-	void construct(const vkte::RenderPass& render_pass, AppState& app_state);
+	void construct(const vkte::RenderPass& render_pass, AppState& app_state, uint32_t frames_in_flight);
 	void destruct();
 	void clear(vk::CommandBuffer& cb, AppState& app_state);
 	void compute(vk::CommandBuffer& cb, AppState& app_state);
@@ -57,18 +57,9 @@ private:
 	{
 		glm::vec2 food_pos;
 		int32_t food_amount;
-		uint32_t frame_idx;
-		float frame_time;
-		float total_time;
 	} spc;
 
-	struct RenderPushConstants
-	{
-		glm::vec2 range_min;
-		glm::vec2 range_max;
-	} rpc;
-
 	void create_pipelines(const vkte::RenderPass& render_pass, const AppState& app_state);
-	void create_descriptor_set();
+	void create_descriptor_set(uint32_t frames_in_flight);
 	void clear_storage_indices();
 };
