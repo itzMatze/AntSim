@@ -184,7 +184,7 @@ void main()
 				ant.state_bits &= ~ANT_HAS_FOOD;
 				ant.state_bits &= ~ANT_TARGET_PRIORITY_MASK;
 				uint old_food_amount = atomicAdd(nest.food_amount, 1);
-				if (old_food_amount == (1u << nest.level)) atomicAdd(nest.level, 1);
+				if (old_food_amount == get_nest_next_level_food_amount(nest.level)) atomicAdd(nest.level, 1);
 			}
 		}
 		else

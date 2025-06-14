@@ -12,5 +12,8 @@ struct HashGridCell
 	uint state_bits;
 };
 
-// decimeter resolution
+// in meters
 const float HASH_GRID_CELL_LENGTH = 0.04;
+
+// in second
+const float PHEROMONE_LIFETIME = 120.0;
