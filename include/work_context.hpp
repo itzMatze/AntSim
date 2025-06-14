@@ -43,6 +43,10 @@ private:
 
 	struct UniformBufferData
 	{
+		uint32_t food_visualization_code;
+		uint32_t food_pheromone_visualization_code;
+		uint32_t nest_visualization_code;
+		uint32_t nest_pheromone_visualization_code;
 		glm::vec2 range_min;
 		glm::vec2 range_max;
 		uint frame_idx;

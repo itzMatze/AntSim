@@ -11,6 +11,7 @@ set(SOURCE_FILES
 	src/hash_grid.cpp
 	src/work_context.cpp
 	src/util/random_generator.cpp
+	src/util/color.cpp
 )
 
 find_package(spdlog REQUIRED)

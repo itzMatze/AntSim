@@ -3,6 +3,7 @@
 #include <vulkan/vulkan_structs.hpp>
 #include "antlog.hpp"
 #include "imgui.h"
+#include "util/color.hpp"
 
 WorkContext::WorkContext(const vkte::VulkanMainContext& vmc, vkte::VulkanCommandContext& vcc)
 	: vmc(vmc), vcc(vcc), storage(vmc, vcc), swapchain(vmc, vcc, storage), ants(vmc, storage), hash_grid(vmc, storage), ui(vmc), swapchain_sync(vmc.logical_device.get())
@@ -64,6 +65,10 @@ void WorkContext::draw_frame(AppState& app_state)
 		app_state.total_time += app_state.frame_time;
 	}
 	else timers[app_state.current_frame].restart();
+	uniform_buffer_data.food_visualization_code = get_hex_color(app_state.vis_code_data.food_color) | app_state.vis_code_data.food;
+	uniform_buffer_data.food_pheromone_visualization_code = get_hex_color(app_state.vis_code_data.food_pheromone_color) | app_state.vis_code_data.food_pheromone;
+	uniform_buffer_data.nest_visualization_code = get_hex_color(app_state.vis_code_data.nest_color) | app_state.vis_code_data.nest;
+	uniform_buffer_data.nest_pheromone_visualization_code = get_hex_color(app_state.vis_code_data.nest_pheromone_color) | app_state.vis_code_data.nest_pheromone;
 	uniform_buffer_data.range_min = app_state.visible_range_min;
 	uniform_buffer_data.range_max = app_state.visible_range_max;
 	uniform_buffer_data.frame_idx = app_state.total_time;
@@ -113,6 +118,27 @@ void WorkContext::render_ui(vk::CommandBuffer& cb, AppState& app_state)
 		}
 		antlog::debug("Debug Data:\nNest\n  food: {}\nHash Grid\n  total:{}\n  occupied:{}\n  percentage:{:4f}\nAnts\n  total:{}\n  carrying:{}\n  percentage:{:4f}", nest.food_amount, hash_grid.size(), occupied_grid_cells, (float(occupied_grid_cells) / float(hash_grid.size())) * 100.0f, ants.size(), carrying_ants, (float(carrying_ants) / float(ants.size())) * 100.0f);
 	}
+
+	ImGui::PushItemWidth(200.0f);
+	ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Visualization Codes");
+	const char* items[] = { "None", "viridis", "plasma", "magma", "inferno", "custom color" };
+	int combo_item = app_state.vis_code_data.food;
+	if (ImGui::Combo("Food", &combo_item, items, IM_ARRAYSIZE(items))) app_state.vis_code_data.food = combo_item;
+	app_state.vis_code_data.food = std::clamp(app_state.vis_code_data.food, 0u, 5u);
+	if (app_state.vis_code_data.food == 5) ImGui::ColorEdit3("Food Color", (float*)(&app_state.vis_code_data.food_color));
+	combo_item = app_state.vis_code_data.food_pheromone;
+	if (ImGui::Combo("Food Pheromone", &combo_item, items, IM_ARRAYSIZE(items))) app_state.vis_code_data.food_pheromone = combo_item;
+	app_state.vis_code_data.food_pheromone = std::clamp(app_state.vis_code_data.food_pheromone, 0u, 5u);
+	if (app_state.vis_code_data.food_pheromone == 5) ImGui::ColorEdit3("Food Pheromone Color", (float*)(&app_state.vis_code_data.food_pheromone_color));
+	combo_item = app_state.vis_code_data.nest;
+	if (ImGui::Combo("Nest", &combo_item, items, IM_ARRAYSIZE(items))) app_state.vis_code_data.nest = combo_item;
+	app_state.vis_code_data.nest = std::clamp(app_state.vis_code_data.nest, 0u, 5u);
+	if (app_state.vis_code_data.nest == 5) ImGui::ColorEdit3("Nest Color", (float*)(&app_state.vis_code_data.nest_color));
+	combo_item = app_state.vis_code_data.nest_pheromone;
+	if (ImGui::Combo("Nest Pheromone", &combo_item, items, IM_ARRAYSIZE(items))) app_state.vis_code_data.nest_pheromone = combo_item;
+	app_state.vis_code_data.nest_pheromone = std::clamp(app_state.vis_code_data.nest_pheromone, 0u, 5u);
+	if (app_state.vis_code_data.nest_pheromone == 5) ImGui::ColorEdit3("Nest Pheromone Color", (float*)(&app_state.vis_code_data.nest_pheromone_color));
+	ImGui::PopItemWidth();
 
 	constexpr float update_weight = 0.1f;
 	app_state.frame_time_ema = app_state.frame_time_ema * (1 - update_weight) + app_state.frame_time * update_weight;
