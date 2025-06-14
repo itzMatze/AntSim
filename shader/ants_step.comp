@@ -70,51 +70,51 @@ void main()
 	float closest_to_dst = FLT_MAX;
 	uint min_target_priority = ant.state_bits & ANT_TARGET_PRIORITY_MASK;
 	uint new_target_priority;
-	for (int x = -cell_radius; x <= cell_radius; x++)
+	// randomly sample 25% of the search area (cells might be sampled more than once; So, it's not necessarily 25%)
+	for (int i = 0; i < cell_radius * cell_radius; i++)
 	{
-		for (int y = -cell_radius; y <= cell_radius; y++)
+		int x = random_int_state(-cell_radius, cell_radius);
+		int y = random_int_state(-cell_radius, cell_radius);
+		// skip the cell in which the ant currently is
+		if (x == 0 && y == 0) continue;
+		ivec2 hash_grid_position = ant_hash_grid_position + ivec2(x, y);
+		int hash_grid_index = get_hash_grid_cell_index_const(hash_grid_position);
+		if (hash_grid_index < 0) continue;
+		const HashGridCell cell = hash_grid[hash_grid_index];
+		// move ant towards food if it doesn't carry any yet
+		if ((ant.state_bits & ANT_HAS_FOOD) == 0)
 		{
-			// skip the cell in which the ant currently is
-			if (x == 0 && y == 0) continue;
-			ivec2 hash_grid_position = ant_hash_grid_position + ivec2(x, y);
-			int hash_grid_index = get_hash_grid_cell_index_const(hash_grid_position);
-			if (hash_grid_index < 0) continue;
-			const HashGridCell cell = hash_grid[hash_grid_index];
-			// move ant towards food if it doesn't carry any yet
-			if ((ant.state_bits & ANT_HAS_FOOD) == 0)
+			if (cell.food_amount > 0 && time_step_probability(0.1, 0.95) && min_target_priority < ANT_TARGET_FOOD_NEST_PRIORITY)
 			{
-				if (cell.food_amount > 0 && time_step_probability(0.1, 0.95) && min_target_priority < ANT_TARGET_FOOD_NEST_PRIORITY)
-				{
-					target_cell_index = hash_grid_index;
-					closest_to_dst = 0;
-					min_target_priority = ANT_TARGET_FOOD_NEST_PRIORITY - 1;
-					new_target_priority = ANT_TARGET_FOOD_NEST_PRIORITY;
-				}
-				else if ((cell.state_bits & HASH_GRID_FOOD_PHEROMONE) != 0 && closest_to_dst > cell.pheromone_distance && (min_target_priority < ANT_TARGET_PHEROMONE_PRIORITY))
-				{
-					target_cell_index = hash_grid_index;
-					closest_to_dst = cell.pheromone_distance;
-					min_target_priority = ANT_TARGET_PHEROMONE_PRIORITY - 1;
-					new_target_priority = ANT_TARGET_PHEROMONE_PRIORITY;
-				}
+				target_cell_index = hash_grid_index;
+				closest_to_dst = 0;
+				min_target_priority = ANT_TARGET_FOOD_NEST_PRIORITY - 1;
+				new_target_priority = ANT_TARGET_FOOD_NEST_PRIORITY;
 			}
-			else
+			else if ((cell.state_bits & HASH_GRID_FOOD_PHEROMONE) != 0 && closest_to_dst > cell.pheromone_distance && (min_target_priority < ANT_TARGET_PHEROMONE_PRIORITY))
 			{
-				float nest_distance = distance(get_hash_grid_pos(cell.index), nest.pos);
-				if (nest_distance < get_nest_radius(nest.level) && min_target_priority < ANT_TARGET_FOOD_NEST_PRIORITY)
-				{
-					target_cell_index = hash_grid_index;
-					closest_to_dst = nest_distance;
-					min_target_priority = ANT_TARGET_FOOD_NEST_PRIORITY - 1;
-					new_target_priority = ANT_TARGET_FOOD_NEST_PRIORITY;
-				}
-				else if ((cell.state_bits & HASH_GRID_NEST_PHEROMONE) != 0 && closest_to_dst > cell.pheromone_distance && (min_target_priority < ANT_TARGET_PHEROMONE_PRIORITY))
-				{
-					target_cell_index = hash_grid_index;
-					closest_to_dst = cell.pheromone_distance;
-					min_target_priority = ANT_TARGET_PHEROMONE_PRIORITY - 1;
-					new_target_priority = ANT_TARGET_PHEROMONE_PRIORITY;
-				}
+				target_cell_index = hash_grid_index;
+				closest_to_dst = cell.pheromone_distance;
+				min_target_priority = ANT_TARGET_PHEROMONE_PRIORITY - 1;
+				new_target_priority = ANT_TARGET_PHEROMONE_PRIORITY;
+			}
+		}
+		else
+		{
+			float nest_distance = distance(get_hash_grid_pos(cell.index), nest.pos);
+			if (nest_distance < get_nest_radius(nest.level) && min_target_priority < ANT_TARGET_FOOD_NEST_PRIORITY)
+			{
+				target_cell_index = hash_grid_index;
+				closest_to_dst = nest_distance;
+				min_target_priority = ANT_TARGET_FOOD_NEST_PRIORITY - 1;
+				new_target_priority = ANT_TARGET_FOOD_NEST_PRIORITY;
+			}
+			else if ((cell.state_bits & HASH_GRID_NEST_PHEROMONE) != 0 && closest_to_dst > cell.pheromone_distance && (min_target_priority < ANT_TARGET_PHEROMONE_PRIORITY))
+			{
+				target_cell_index = hash_grid_index;
+				closest_to_dst = cell.pheromone_distance;
+				min_target_priority = ANT_TARGET_PHEROMONE_PRIORITY - 1;
+				new_target_priority = ANT_TARGET_PHEROMONE_PRIORITY;
 			}
 		}
 	}
