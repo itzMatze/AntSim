@@ -1,11 +1,15 @@
 struct UniformBufferData
 {
-	uint food_visualization_code;
-	uint food_pheromone_visualization_code;
-	uint nest_visualization_code;
-	uint nest_pheromone_visualization_code;
 	vec2 range_min;
 	vec2 range_max;
+	uint food_vis_code;
+	uint food_pheromone_vis_code;
+	uint nest_vis_code;
+	uint nest_pheromone_vis_code;
+	uint ant_wo_food_vis_code;
+	uint ant_wo_food_dir_vis_code;
+	uint ant_w_food_vis_code;
+	uint ant_w_food_dir_vis_code;
 	uint frame_idx;
 	float frame_time;
 	float total_time;

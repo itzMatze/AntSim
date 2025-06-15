@@ -65,12 +65,16 @@ void WorkContext::draw_frame(AppState& app_state)
 		app_state.total_time += app_state.frame_time;
 	}
 	else timers[app_state.current_frame].restart();
-	uniform_buffer_data.food_visualization_code = get_hex_color(app_state.vis_code_data.food_color) | app_state.vis_code_data.food;
-	uniform_buffer_data.food_pheromone_visualization_code = get_hex_color(app_state.vis_code_data.food_pheromone_color) | app_state.vis_code_data.food_pheromone;
-	uniform_buffer_data.nest_visualization_code = get_hex_color(app_state.vis_code_data.nest_color) | app_state.vis_code_data.nest;
-	uniform_buffer_data.nest_pheromone_visualization_code = get_hex_color(app_state.vis_code_data.nest_pheromone_color) | app_state.vis_code_data.nest_pheromone;
 	uniform_buffer_data.range_min = app_state.visible_range_min;
 	uniform_buffer_data.range_max = app_state.visible_range_max;
+	uniform_buffer_data.food_vis_code = get_hex_color(app_state.vis_code_data.food_color) | app_state.vis_code_data.food;
+	uniform_buffer_data.food_pheromone_vis_code = get_hex_color(app_state.vis_code_data.food_pheromone_color) | app_state.vis_code_data.food_pheromone;
+	uniform_buffer_data.nest_vis_code = get_hex_color(app_state.vis_code_data.nest_color) | app_state.vis_code_data.nest;
+	uniform_buffer_data.nest_pheromone_vis_code = get_hex_color(app_state.vis_code_data.nest_pheromone_color) | app_state.vis_code_data.nest_pheromone;
+	uniform_buffer_data.ant_wo_food_vis_code = get_hex_color(app_state.vis_code_data.ant_wo_food_color);
+	uniform_buffer_data.ant_wo_food_dir_vis_code = get_hex_color(app_state.vis_code_data.ant_wo_food_dir_color);
+	uniform_buffer_data.ant_w_food_vis_code = get_hex_color(app_state.vis_code_data.ant_w_food_color);
+	uniform_buffer_data.ant_w_food_dir_vis_code = get_hex_color(app_state.vis_code_data.ant_w_food_dir_color);
 	uniform_buffer_data.frame_idx = app_state.total_time;
 	uniform_buffer_data.frame_time = app_state.frame_time;
 	uniform_buffer_data.total_time = app_state.total_time;
@@ -120,7 +124,7 @@ void WorkContext::render_ui(vk::CommandBuffer& cb, AppState& app_state)
 	}
 
 	ImGui::PushItemWidth(200.0f);
-	ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Visualization Codes");
+	ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Visualization");
 	const char* items[] = { "None", "viridis", "plasma", "magma", "inferno", "custom color" };
 	int combo_item = app_state.vis_code_data.food;
 	if (ImGui::Combo("Food", &combo_item, items, IM_ARRAYSIZE(items))) app_state.vis_code_data.food = combo_item;
@@ -138,7 +142,13 @@ void WorkContext::render_ui(vk::CommandBuffer& cb, AppState& app_state)
 	if (ImGui::Combo("Nest Pheromone", &combo_item, items, IM_ARRAYSIZE(items))) app_state.vis_code_data.nest_pheromone = combo_item;
 	app_state.vis_code_data.nest_pheromone = std::clamp(app_state.vis_code_data.nest_pheromone, 0u, 5u);
 	if (app_state.vis_code_data.nest_pheromone == 5) ImGui::ColorEdit3("Nest Pheromone Color", (float*)(&app_state.vis_code_data.nest_pheromone_color));
+	ImGui::Text("Ants Colors");
+	ImGui::ColorEdit3("Without Food", (float*)(&app_state.vis_code_data.ant_wo_food_color));
+	ImGui::ColorEdit3("Without Food Direction Marker", (float*)(&app_state.vis_code_data.ant_wo_food_dir_color));
+	ImGui::ColorEdit3("With Food", (float*)(&app_state.vis_code_data.ant_w_food_color));
+	ImGui::ColorEdit3("With Food Direction Marker", (float*)(&app_state.vis_code_data.ant_w_food_dir_color));
 	ImGui::PopItemWidth();
+	ImGui::Separator();
 
 	constexpr float update_weight = 0.1f;
 	app_state.frame_time_ema = app_state.frame_time_ema * (1 - update_weight) + app_state.frame_time * update_weight;

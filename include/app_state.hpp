@@ -19,13 +19,21 @@ struct VisualizationCodeData
 	glm::vec3 food_color = glm::vec3(0.0f, 0.0f, 0.0f);
 	// food pheromones in dark yellow
 	uint32_t food_pheromone = 5;
-	glm::vec3 food_pheromone_color = glm::vec3(0.4f, 0.0f, 0.4f);
+	glm::vec3 food_pheromone_color = glm::vec3(0.0f, 0.4f, 0.4f);
 	// nest with plasma
 	uint32_t nest = 2;
 	glm::vec3 nest_color = glm::vec3(0.0f, 0.0f, 0.0f);
 	// nest pheromones in dark blue
 	uint32_t nest_pheromone = 5;
 	glm::vec3 nest_pheromone_color = glm::vec3(0.0f, 0.0f, 0.4f);
+	// ant without food in blue
+	glm::vec3 ant_wo_food_color = glm::vec3(0.0f, 0.0f, 1.0f);
+	// ant without food leading edge in pink
+	glm::vec3 ant_wo_food_dir_color = glm::vec3(1.0f, 0.0f, 1.0f);
+	// ant with food in yellow
+	glm::vec3 ant_w_food_color = glm::vec3(0.0f, 1.0f, 1.0f);
+	// ant with food leading edge in pink
+	glm::vec3 ant_w_food_dir_color = glm::vec3(1.0f, 0.0f, 1.0f);
 };
 
 struct AppState {
