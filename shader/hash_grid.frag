@@ -48,7 +48,8 @@ void main()
 	ivec2 hash_grid_pos = get_hash_grid_pos(pos);
 	if (distance(pos, nest.pos) < get_nest_radius(nest.level) && get_vis_code_a(ub.nest_vis_code) > 0)
 	{
-		out_color = colormap(float(nest.food_amount - get_nest_next_level_food_amount(nest.level - 1)) / float(get_nest_next_level_food_amount(nest.level)), ub.nest_vis_code);
+		const uint required_food = get_nest_next_level_food_amount(nest.level) - get_nest_next_level_food_amount(nest.level - 1);
+		out_color = colormap(float(nest.food_amount - get_nest_next_level_food_amount(nest.level - 1)) / float(required_food), ub.nest_vis_code);
 		return;
 	}
 	int hash_grid_index = get_hash_grid_cell_index_const(hash_grid_pos);
