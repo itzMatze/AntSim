@@ -13,7 +13,9 @@ struct AntData
 	glm::vec2 dir;
 	glm::vec2 target;
 	float distance_to_poi;
+	float pheromone_emit_scale;
 	uint32_t state_bits;
+	uint32_t pad0;
 };
 
 struct NestData

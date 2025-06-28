@@ -10,5 +10,8 @@ struct Ant
 	vec2 dir;
 	vec2 target;
 	float distance_to_poi;
+	// track how many other pheromones the ant sees to increase probability of emitting one
+	float pheromone_emit_scale;
 	uint state_bits;
+	uint pad0;
 };
