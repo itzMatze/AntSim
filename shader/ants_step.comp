@@ -67,7 +67,7 @@ void main()
 	uint min_target_priority = ant.state_bits & ANT_TARGET_PRIORITY_MASK;
 	uint new_target_priority;
 	// randomly sample 25% of the search area (cells might be sampled more than once; So, it's not necessarily 25%)
-	for (int i = 0; i < cell_radius * cell_radius; i++)
+	for (int i = 0; i < cell_radius * cell_radius * 2; i++)
 	{
 		int x = random_int_state(-cell_radius, cell_radius);
 		int y = random_int_state(-cell_radius, cell_radius);
@@ -76,6 +76,7 @@ void main()
 		ivec2 hash_grid_position = ant_hash_grid_position + ivec2(x, y);
 		int hash_grid_index = get_hash_grid_cell_index_const(hash_grid_position);
 		if (hash_grid_index < 0) continue;
+		i++;
 		const HashGridCell cell = hash_grid[hash_grid_index];
 		// move ant towards food if it doesn't carry any yet
 		if ((ant.state_bits & ANT_HAS_FOOD) == 0)
