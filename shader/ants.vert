@@ -2,13 +2,13 @@
 
 #extension GL_GOOGLE_include_directive: require
 #include "uniform_buffer_struct.glsl"
-#include "ants_struct.glsl"
 
 layout(location = 0) in vec2 pos;
 layout(location = 1) in vec2 dir;
 layout(location = 2) in uint state_bits;
 
-layout(location = 0) out vec3 frag_color;
+layout(location = 0) out vec2 frag_uv;
+layout(location = 1) out flat int frag_ant_id;
 
 layout(binding = 99) uniform UniformBuffer {
 	UniformBufferData ub;
@@ -25,11 +25,6 @@ const vec2 quad_offsets[6] = vec2[](
 
 const float quad_size = 0.02;
 
-vec3 get_vis_code_color(uint vis_code)
-{
-	return vec3(get_vis_code_r(vis_code), get_vis_code_g(vis_code), get_vis_code_b(vis_code));
-}
-
 void main() {
 	vec2 vert_pos = quad_offsets[gl_VertexIndex] * quad_size;
 	const vec2 norm_front = normalize(quad_offsets[2]);
@@ -43,14 +38,9 @@ void main() {
 	vert_pos = rotation * vert_pos + pos;
 	vec2 ndc = (2.0 * (vert_pos - ub.range_min)) / (ub.range_max - ub.range_min) - 1.0;
 	gl_Position = vec4(ndc, 0.0, 1.0);
-	if ((state_bits & ANT_HAS_FOOD) == 0)
-	{
-		if (gl_VertexIndex == 2 || gl_VertexIndex == 4) frag_color = get_vis_code_color(ub.ant_wo_food_dir_vis_code);
-		else frag_color = get_vis_code_color(ub.ant_wo_food_vis_code);
-	}
-	else
-	{
-		if (gl_VertexIndex == 2 || gl_VertexIndex == 4) frag_color = get_vis_code_color(ub.ant_w_food_dir_vis_code);
-		else frag_color = get_vis_code_color(ub.ant_w_food_vis_code);
-	}
+	if (gl_VertexIndex == 0 || gl_VertexIndex == 3) frag_uv = vec2(0.0, 0.0);
+	else if (gl_VertexIndex == 1) frag_uv = vec2(1.0, 0.0);
+	else if (gl_VertexIndex == 2 || gl_VertexIndex == 4) frag_uv = vec2(1.0, 1.0);
+	else if (gl_VertexIndex == 5) frag_uv = vec2(0.0, 1.0);
+	frag_ant_id = gl_InstanceIndex;
 }

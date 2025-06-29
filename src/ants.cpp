@@ -150,7 +150,8 @@ void Ants::create_descriptor_set(uint32_t frames_in_flight)
 	pipeline_data[UPDATE_HASH_GRID_PIPELINE]->dsh.add_binding(1, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
 	pipeline_data[UPDATE_HASH_GRID_PIPELINE]->dsh.add_binding(99, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eCompute);
 	pipeline_data[CLEAR_PIPELINE]->dsh.add_binding(0, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eCompute);
-	pipeline_data[RENDER_PIPELINE]->dsh.add_binding(99, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex);
+	pipeline_data[RENDER_PIPELINE]->dsh.add_binding(0, vk::DescriptorType::eStorageBuffer, vk::ShaderStageFlagBits::eFragment);
+	pipeline_data[RENDER_PIPELINE]->dsh.add_binding(99, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
 	for (uint32_t i = 0; i < frames_in_flight; ++i)
 	{
 		pipeline_data[STEP_PIPELINE]->dsh.add_descriptor(i, 0, storage.get_buffer(buffers[ANTS_BUFFER]));
@@ -161,6 +162,7 @@ void Ants::create_descriptor_set(uint32_t frames_in_flight)
 		pipeline_data[UPDATE_HASH_GRID_PIPELINE]->dsh.add_descriptor(i, 1, storage.get_buffer_by_name("hash_grid_buffer"));
 		pipeline_data[UPDATE_HASH_GRID_PIPELINE]->dsh.add_descriptor(i, 99, storage.get_buffer_by_name("uniform_buffer_" + std::to_string(i)));
 		pipeline_data[CLEAR_PIPELINE]->dsh.add_descriptor(i, 0, storage.get_buffer(buffers[ANTS_BUFFER]));
+		pipeline_data[RENDER_PIPELINE]->dsh.add_descriptor(i, 0, storage.get_buffer(buffers[ANTS_BUFFER]));
 		pipeline_data[RENDER_PIPELINE]->dsh.add_descriptor(i, 99, storage.get_buffer_by_name("uniform_buffer_" + std::to_string(i)));
 	}
 	for (std::unique_ptr<PipelineData>& pipeline_datum : pipeline_data) pipeline_datum->dsh.construct();
