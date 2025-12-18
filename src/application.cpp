@@ -12,7 +12,10 @@ struct GPUContext
 {
 	GPUContext(AppState& app_state) : vmc(), vcc(vmc), wc(vmc, vcc)
 	{
-		vmc.construct("AntSim", app_state.get_window_extent().width, app_state.get_window_extent().height);
+		const std::vector<const char*> instance_extensions;
+		const std::vector<const char*> device_extensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+		const std::vector<const char*> validation_layers{"VK_LAYER_KHRONOS_validation"};
+		vmc.construct("AntSim", app_state.get_window_extent().width, app_state.get_window_extent().height, instance_extensions, device_extensions, validation_layers);
 		vcc.construct();
 		wc.construct(app_state);
 	}
@@ -28,8 +31,9 @@ struct GPUContext
 	WorkContext wc;
 };
 
-void dispatch_pressed_keys(EventHandler& event_handler, AppState& app_state, Window& window)
+void dispatch_pressed_keys(vkte::EventHandler& event_handler, AppState& app_state, vkte::Window& window)
 {
+	using Key = vkte::Key;
 	if (event_handler.is_key_released(Key::G))
 	{
 		app_state.show_ui = !app_state.show_ui;
@@ -94,7 +98,7 @@ int run_application(glm::ivec2 window_resolution)
 	AppState app_state;
 	app_state.set_render_extent(vk::Extent2D(window_resolution.x, window_resolution.y));
 	GPUContext gpu_context(app_state);
-	EventHandler event_handler;
+	vkte::EventHandler event_handler;
 
 	bool quit = false;
 	Timer rendering_timer;

@@ -53,7 +53,7 @@ private:
 		uint32_t ant_wo_food_dir_vis_code;
 		uint32_t ant_w_food_vis_code;
 		uint32_t ant_w_food_dir_vis_code;
-		uint frame_idx;
+		uint32_t frame_idx;
 		float frame_time;
 		float total_time;
 	} uniform_buffer_data;
@@ -64,7 +64,7 @@ private:
 	vkte::Swapchain swapchain;
 	Ants ants;
 	HashGrid hash_grid;
-	UI ui;
+	vkte::UI ui;
 	std::vector<vkte::Synchronization> syncs;
 	vkte::Synchronization swapchain_sync;
 	std::vector<vkte::DeviceTimer> device_timers;
