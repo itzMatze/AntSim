@@ -14,9 +14,9 @@ void HashGrid::setup_storage(AppState& app_state)
 
 void HashGrid::construct(const vkte::RenderPass& render_pass, AppState& app_state, uint32_t frames_in_flight)
 {
-	pipeline_data[CLEAR_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, frames_in_flight)});
-	pipeline_data[RENDER_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, frames_in_flight)});
-	pipeline_data[STEP_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc), vkte::DescriptorSetHandler(vmc, frames_in_flight)});
+	pipeline_data[CLEAR_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc, vkte::Pipeline::Type::Compute), vkte::DescriptorSetHandler(vmc, frames_in_flight)});
+	pipeline_data[RENDER_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc, vkte::Pipeline::Type::Graphics), vkte::DescriptorSetHandler(vmc, frames_in_flight)});
+	pipeline_data[STEP_PIPELINE] = std::make_unique<PipelineData>(PipelineData{vkte::Pipeline(vmc, vkte::Pipeline::Type::Compute), vkte::DescriptorSetHandler(vmc, frames_in_flight)});
 	create_descriptor_set(frames_in_flight);
 	create_pipelines(render_pass, app_state);
 }
@@ -59,44 +59,33 @@ void HashGrid::render(vk::CommandBuffer& cb, AppState& app_state, const vk::Fram
 void HashGrid::create_pipelines(const vkte::RenderPass& render_pass, const AppState& app_state)
 {
 	{
-		std::array<vk::SpecializationMapEntry, 1> spec_entries;
-		spec_entries[0] = vk::SpecializationMapEntry(0, 0, sizeof(uint32_t));
-		std::array<uint32_t, 1> spec_entries_data{app_state.hash_grid_capacity};
-		vk::SpecializationInfo spec_info(spec_entries.size(), spec_entries.data(), sizeof(uint32_t) * spec_entries_data.size(), spec_entries_data.data());
-		vkte::ShaderInfo clear_hash_grid_shader_info = vkte::ShaderInfo{"hash_grid_clear.comp", vk::ShaderStageFlagBits::eCompute, spec_info};
-		vkte::Pipeline::ComputeSettings settings;
+		vkte::Pipeline::ComputeSettings& settings = pipeline_data[CLEAR_PIPELINE]->pipeline.get_compute_settings();
+		settings.shader = vkte::Shader("hash_grid_clear.comp", vk::ShaderStageFlagBits::eCompute);
+		settings.shader.add_specialization_constant(0, app_state.hash_grid_capacity);
 		settings.set_layout = &pipeline_data[CLEAR_PIPELINE]->dsh.get_layout();
-		settings.shader_info = &clear_hash_grid_shader_info;
 		settings.push_constant_byte_size = 0;
-		pipeline_data[CLEAR_PIPELINE]->pipeline.construct(settings);
 	}
 	{
-		std::array<vk::SpecializationMapEntry, 1> spec_entries;
-		spec_entries[0] = vk::SpecializationMapEntry(0, 0, sizeof(uint32_t));
-		std::array<uint32_t, 1> spec_entries_data{app_state.hash_grid_capacity};
-		vk::SpecializationInfo spec_info(spec_entries.size(), spec_entries.data(), sizeof(uint32_t) * spec_entries_data.size(), spec_entries_data.data());
-		std::vector<vkte::ShaderInfo> render_shader_infos(2);
-		render_shader_infos[0] = vkte::ShaderInfo{"hash_grid.vert", vk::ShaderStageFlagBits::eVertex};
-		render_shader_infos[1] = vkte::ShaderInfo{"hash_grid.frag", vk::ShaderStageFlagBits::eFragment, spec_info};
-		vkte::Pipeline::GraphicsSettings settings;
+		vkte::Pipeline::GraphicsSettings& settings = pipeline_data[RENDER_PIPELINE]->pipeline.get_graphics_settings();
+		settings.shaders.push_back(vkte::Shader("hash_grid.vert", vk::ShaderStageFlagBits::eVertex));
+		settings.shaders.push_back(vkte::Shader("hash_grid.frag", vk::ShaderStageFlagBits::eFragment));
+		settings.shaders.back().add_specialization_constant(0, app_state.hash_grid_capacity);
 		settings.render_pass = &render_pass;
 		settings.set_layout = &pipeline_data[RENDER_PIPELINE]->dsh.get_layout();
 		settings.polygon_mode = vk::PolygonMode::eFill;
 		settings.primitive_topology = vk::PrimitiveTopology::eTriangleList;
-		settings.shader_infos = &render_shader_infos;
-		pipeline_data[RENDER_PIPELINE]->pipeline.construct(settings);
 	}
 	{
-		std::array<vk::SpecializationMapEntry, 1> spec_entries;
-		spec_entries[0] = vk::SpecializationMapEntry(0, 0, sizeof(uint32_t));
-		std::array<uint32_t, 1> spec_entries_data{app_state.hash_grid_capacity};
-		vk::SpecializationInfo spec_info(spec_entries.size(), spec_entries.data(), sizeof(uint32_t) * spec_entries_data.size(), spec_entries_data.data());
-		vkte::ShaderInfo hash_grid_step_shader_info = vkte::ShaderInfo{"hash_grid_step.comp", vk::ShaderStageFlagBits::eCompute, spec_info};
-		vkte::Pipeline::ComputeSettings settings;
+		vkte::Pipeline::ComputeSettings& settings = pipeline_data[STEP_PIPELINE]->pipeline.get_compute_settings();
+		settings.shader = vkte::Shader("hash_grid_step.comp", vk::ShaderStageFlagBits::eCompute);
+		settings.shader.add_specialization_constant(0, app_state.hash_grid_capacity);
 		settings.set_layout = &pipeline_data[STEP_PIPELINE]->dsh.get_layout();
-		settings.shader_info = &hash_grid_step_shader_info;
 		settings.push_constant_byte_size = sizeof(StepPushConstants);
-		pipeline_data[STEP_PIPELINE]->pipeline.construct(settings);
+	}
+	for (std::unique_ptr<PipelineData>& pipeline_datum : pipeline_data)
+	{
+		VKTE_ASSERT(pipeline_datum->pipeline.compile_shaders(), "vkte: Failed to compile shaders!");
+		pipeline_datum->pipeline.construct();
 	}
 }
 
