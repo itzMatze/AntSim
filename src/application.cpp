@@ -110,7 +110,7 @@ int run_application(glm::ivec2 window_resolution)
 		{
 			gpu_context.wc.draw_frame(app_state);
 		}
-		catch (const vk::OutOfDateKHRError e)
+		catch (const vk::OutOfDateKHRError& e)
 		{
 			gpu_context.vmc.logical_device.get().waitIdle();
 			app_state.current_frame = 0;

@@ -237,5 +237,11 @@ void WorkContext::render(uint32_t image_idx, AppState& app_state)
 	vmc.get_graphics_queue().submit(render_si, syncs[app_state.current_frame].get_fence(F_RENDER_FINISHED));
 
 	vk::PresentInfoKHR present_info(1, &swapchain_sync.get_semaphore(image_idx), 1, &swapchain.get(), &image_idx);
-	VKTE_CHECK(vmc.get_present_queue().presentKHR(present_info), "Failed to present image!");
+	vk::Result result = vmc.get_present_queue().presentKHR(present_info);
+	if (result == vk::Result::eSuboptimalKHR)
+	{
+		vk::OutOfDateKHRError e("Swapchain suboptimal!");
+		throw e;
+	}
+	else if (result != vk::Result::eSuccess) VKTE_THROW("Failed to present!");
 }
